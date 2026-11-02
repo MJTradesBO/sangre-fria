@@ -1,0 +1,1083 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sangre Fría · MJ Trades</title>
+<meta name="description" content="Anota cada trade, marca cuándo rompiste tus reglas y mira cuánto dinero te costó. Gratis, por MJ Trades.">
+<meta name="theme-color" content="#05070d">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="icono-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="icono-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icono-192.png">
+<link rel="apple-touch-icon" href="icono-apple.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&display=swap" rel="stylesheet">
+<style>
+  /* La forma de toda la página es el cuadro del día del calendario de P&L:
+     azul si seguiste tus reglas, rojo con una cruz si las rompiste. */
+  :root {
+    --ground: #05070d;
+    --surface: #0d1322;
+    --surface2: #161f36;
+    --deep: #0a2257;
+    --ink: #f2f7ff;
+    --muted: #a3afca;
+    --accent: #2f7bff;
+    --accent-ink: #ffffff;
+    --action: #1a5fe6;          /* el azul de marca, un tono más hondo para que el texto blanco se lea */
+    --ice: #b9dcff;
+    --win: #2ee08a;
+    --loss: #ff4d5e;
+    --loss-field: #3a0f19;
+    --tile: 6px;               /* la esquina del cuadro del día, en toda la página */
+    --m: clamp(16px, 2.4vw, 36px);
+    --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+    --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+    --step-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+    --step-head: clamp(2rem, 1.3rem + 3.2vw, 4rem);
+    --step-display: clamp(3rem, 1rem + 5.4vw, 6rem);
+    --ease: cubic-bezier(.2, .8, .2, 1);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: "Bricolage Grotesque", system-ui, sans-serif; font-size: var(--step-body); line-height: 1.5;
+    font-variant-numeric: tabular-nums; overflow-x: hidden;
+  }
+  img, video { display: block; max-width: 100%; }
+  a { color: inherit; }
+  button, input { font: inherit; color: inherit; }
+  h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -.04em; line-height: .95; }
+  p { margin: 0; }
+  :focus-visible { outline: 3px solid var(--ice); outline-offset: 3px; }
+  .oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .verde { color: var(--win); } .rojo { color: var(--loss); }
+
+  .boton {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 22px;
+    border: 0; border-radius: var(--tile); background: var(--action); color: var(--accent-ink);
+    font-size: var(--step-body); font-weight: 500; text-decoration: none; cursor: pointer;
+    transition: transform .25s var(--ease), background-color .25s;
+  }
+  .boton:hover { background: var(--accent); transform: translateY(-2px); }
+  .boton:active { transform: translateY(1px) scale(.98); }
+  .boton.claro { background: var(--ink); color: var(--ground); }
+  .boton.claro:hover { background: var(--ice); }
+  .boton .cuadro { width: 12px; height: 12px; border-radius: 2px; background: currentColor; transition: transform .3s var(--ease); }
+  .boton:hover .cuadro { transform: rotate(90deg); }
+
+  /* ---------- Navegación ---------- */
+  .nav { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: center; gap: 28px; padding: 24px var(--m); }
+  .marca { display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 600; font-size: var(--step-lead); letter-spacing: -.03em; }
+  .marca img { width: 40px; height: 40px; border-radius: 50%; }
+  .nav .links { display: flex; gap: 26px; margin-left: auto; }
+  .nav .links a { text-decoration: none; font-size: 15px; color: var(--muted); transition: color .2s; }
+  .nav .links a:hover { color: var(--ink); }
+  .nav .boton { min-height: 44px; font-size: 15px; }
+
+  /* ---------- Hero: el escenario con un día arrancado ---------- */
+  .hero { position: relative; min-height: 100svh; padding: 150px var(--m) 0; overflow: hidden; }
+  .hero h1 { font-size: var(--step-display); max-width: 9.6em; }
+  .hero .apoyo { font-size: var(--step-lead); line-height: 1.35; max-width: 30ch; margin: 28px 0 32px; color: var(--ink); }
+  .hero .texto { position: relative; z-index: 2; max-width: 62vw; }
+  .hero .apoyo, .hero .boton { max-width: 30ch; }
+  .escenario {
+    --n: clamp(90px, 9vw, 150px);
+    position: absolute; left: 44%; right: 0; top: 46%; bottom: 0; background: var(--accent);
+    clip-path: polygon(var(--n) 0, 100% 0, 100% 100%, 0 100%, 0 var(--n), var(--n) var(--n));
+  }
+  /* El día que falta en la esquina: el que rompiste */
+  .dia-roto {
+    position: absolute; left: calc(44% + 10px); top: calc(46% + 10px); width: calc(clamp(90px, 9vw, 150px) - 20px); aspect-ratio: 1;
+    border-radius: var(--tile); background: var(--loss); display: grid; place-items: center;
+    animation: caer 1.2s var(--ease) .5s both;
+  }
+  @keyframes caer { from { transform: translate(-60px, -80px) rotate(-24deg); opacity: 0; } }
+
+  /* Fragmento vivo del diario */
+  .diario {
+    position: absolute; z-index: 3; left: calc(44% + clamp(90px, 9vw, 150px) + 40px); top: calc(46% + 48px); width: min(620px, 46vw);
+    background: var(--ground); border-radius: var(--tile); padding: 22px 22px 120px; color: var(--ink);
+  }
+  .diario-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 14px; color: var(--muted); }
+  .diario-cab b { color: var(--ink); font-size: 16px; font-weight: 500; }
+  .cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0; }
+  .cifras div { background: var(--surface); border-radius: var(--tile); padding: 12px 14px; }
+  .cifras small { display: block; font-size: 13px; color: var(--muted); }
+  .cifras strong { display: block; font-size: clamp(20px, 2vw, 28px); font-weight: 600; letter-spacing: -.03em; margin-top: 2px; }
+  .cifras .coste { background: var(--loss-field); }
+  .cifras .coste.cero { background: var(--deep); }
+  .semana { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .semana .dn { font-size: 13px; color: var(--muted); padding-bottom: 2px; }
+  .d {
+    position: relative; aspect-ratio: 1.25; border: 0; border-radius: var(--tile); background: var(--surface); text-align: left;
+    padding: 8px 9px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer;
+    transition: transform .2s var(--ease), background-color .25s;
+  }
+  .d:hover { transform: translateY(-2px); background: var(--surface2); }
+  .d:active { transform: scale(.95); }
+  .d span { font-size: 13px; color: var(--muted); }
+  .d b { font-size: clamp(12px, 1vw, 15px); font-weight: 500; }
+  .d.roto { background: var(--loss-field); }
+  .cruz { position: relative; width: 44%; aspect-ratio: 1; }
+  .cruz::before, .cruz::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 16%; margin-top: -8%; border-radius: 3px; background: #fff; transform: rotate(45deg); }
+  .cruz::after { transform: rotate(-45deg); }
+  .d.roto .cruz { position: absolute; top: 8px; right: 8px; width: 12px; }
+  .d.roto .cruz::before, .d.roto .cruz::after { background: var(--loss); height: 3px; margin-top: -1.5px; }
+  .d:not(.roto) .cruz { display: none; }
+  .d.pulso { animation: pulso .4s var(--ease); }
+  @keyframes pulso { 50% { transform: scale(.9); } }
+  .pista { margin-top: 14px; font-size: 14px; color: var(--muted); }
+  .pista b { color: var(--ink); font-weight: 500; }
+
+  /* ---------- Frase con miniaturas ---------- */
+  .frase { padding: 22vh var(--m); display: flex; justify-content: center; }
+  .frase p { max-width: 64vw; text-align: center; font-size: clamp(24px, 2.6vw, 36px); line-height: 1.22; font-weight: 500; letter-spacing: -.02em; }
+  .mini { display: inline-block; width: 1.2em; height: .85em; vertical-align: -.1em; margin: 0 .12em; border-radius: var(--tile); overflow: hidden; background: var(--surface); }
+  .mini img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
+  .frase p:hover .mini img { transform: scale(1.15); }
+
+  /* ---------- Escaparate: tu cuenta contada dos veces ---------- */
+  .duelo { display: grid; grid-template-columns: 1fr 1fr; min-height: 88svh; background: var(--surface); }
+  .placa { display: grid; place-items: center; padding: 40px; }
+  .placa-in { width: min(100%, 72svh); aspect-ratio: 1; background: var(--deep); border-radius: var(--tile); padding: 28px; display: flex; flex-direction: column; gap: 18px; }
+  .placa-in .fila { display: flex; justify-content: space-between; gap: 12px; }
+  .placa-in small { display: block; font-size: 14px; color: var(--ice); }
+  .placa-in strong { display: block; font-size: clamp(28px, 3.4vw, 52px); font-weight: 600; letter-spacing: -.04em; line-height: 1.05; }
+  .placa-in canvas { flex: 1; width: 100%; min-height: 0; display: block; touch-action: pan-y; cursor: crosshair; }
+  .placa-in .linea { fill: none; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; transition: d .9s var(--ease); }
+  .placa-in .hueco { transition: d .9s var(--ease); }
+  .placa-in .ley { display: flex; gap: 18px; font-size: 14px; color: var(--ice); }
+  .placa-in .ley i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; }
+  .lado-texto { display: flex; flex-direction: column; justify-content: space-between; padding: 56px var(--m) 56px 40px; gap: 40px; }
+  .pestanas { display: flex; gap: 28px; }
+  .pestanas button { background: none; border: 0; padding: 0 0 6px; font-size: var(--step-body); color: var(--muted); cursor: pointer; position: relative; }
+  .pestanas button::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .35s var(--ease); }
+  .pestanas button[aria-selected="true"] { color: var(--ink); }
+  .pestanas button[aria-selected="true"]::after { transform: scaleX(1); }
+  .lado-texto h2 { font-size: clamp(32px, 3vw, 44px); }
+  .lado-texto .desc { max-width: 34ch; margin-top: 48px; color: var(--ink); }
+  .celdas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .celdas a { min-height: 72px; display: flex; align-items: center; padding: 0 22px; border-radius: var(--tile); text-decoration: none; font-weight: 500; transition: transform .25s var(--ease), background-color .25s; }
+  .celdas a:hover { transform: translateY(-3px); }
+  .celdas .uno { background: var(--ink); color: var(--ground); }
+  .celdas .dos { background: var(--surface2); }
+  .celdas .dos:hover { background: #20294a; }
+
+  /* ---------- Banda de días: el mundo del trading en cuadros ---------- */
+  .banda { padding: 8px 0; overflow: hidden; }
+  .banda-pista { display: flex; gap: 8px; width: max-content; will-change: transform; }
+  .banda { cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  .banda.arrastrando { cursor: grabbing; }
+  .banda figure img { -webkit-user-drag: none; pointer-events: none; }
+  .banda figure { margin: 0; position: relative; width: clamp(180px, 19vw, 300px); aspect-ratio: 1; border-radius: var(--tile); overflow: hidden; background: var(--surface); }
+  .banda figure img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s var(--ease); }
+  .banda figure:hover img { transform: scale(1.08); }
+  .banda figcaption { position: absolute; left: 8px; bottom: 8px; right: 8px; font-size: var(--step-small); background: var(--ground); color: var(--ink); padding: 5px 9px; border-radius: 4px; width: fit-content; }
+  .banda .marca-dia { background: var(--accent); display: grid; place-items: center; color: #fff; font-size: clamp(22px, 2.2vw, 34px); font-weight: 600; letter-spacing: -.03em; padding: 20px; text-align: center; line-height: 1.05; }
+  .banda .marca-dia.roja { background: var(--loss); }
+  @keyframes deslizar { to { transform: translateX(-50%); } }
+
+  /* ---------- Cómo funciona: una sola barra ---------- */
+  .como { padding: 180px var(--m) 160px; }
+  .como h2 { font-size: clamp(48px, 6.4vw, 104px); margin-bottom: 64px; max-width: 12em; }
+  .barra { display: flex; gap: 6px; height: 22vh; min-height: 170px; }
+  .seg { flex-basis: 0; border-radius: var(--tile); padding: 20px; font-size: clamp(20px, 2vw, 30px); font-weight: 500; letter-spacing: -.02em; transform-origin: left; }
+  .seg.s1 { flex-grow: 1.4; background: var(--accent); }
+  .seg.s2 { flex-grow: 1.4; background: var(--ice); color: var(--ground); }
+  .seg.s3 { flex-grow: 7; background: var(--surface2); }
+  .seg.s3 em { font-style: normal; color: var(--loss); }
+  .pies { display: flex; gap: 6px; margin-top: 18px; }
+  .pies p { flex-basis: 0; font-size: var(--step-body); max-width: 22ch; }
+  .pies p:nth-child(1), .pies p:nth-child(2) { flex-grow: 1.4; }
+  .pies p:nth-child(3) { flex-grow: 7; max-width: 30ch; }
+
+  /* ---------- Lista cartel: lo que más cuesta ---------- */
+  .cartel { position: relative; padding: 80px var(--m); background: var(--surface); }
+  .cartel ol { list-style: none; margin: 0; padding: 0; }
+  .cartel li { position: relative; display: flex; justify-content: space-between; align-items: baseline; gap: 20px; cursor: default; }
+  .cartel li .t { font-size: var(--step-display); font-weight: 600; letter-spacing: -.045em; line-height: .98; transition: color .24s, transform .4s var(--ease); }
+  .cartel li .v { font-size: var(--step-body); color: var(--loss); white-space: nowrap; }
+  .cartel li .im { display: none; }
+  .cartel ol:hover li .t { color: #4d5878; }
+  .cartel ol li:hover .t { color: var(--accent); transform: translateX(14px); }
+  .cartel .nota { margin-top: 36px; font-size: 15px; color: var(--muted); max-width: 60ch; }
+  .vista {
+    position: absolute; z-index: 2; left: 52%; top: 0; width: clamp(240px, 24vw, 380px); aspect-ratio: 1; border-radius: var(--tile); overflow: hidden;
+    pointer-events: none; opacity: 0; transform: scale(.94); transition: opacity .24s, transform .24s var(--ease), top .32s var(--ease); background: var(--ground);
+  }
+  .vista.on { opacity: 1; transform: none; }
+  .vista img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .24s; }
+  .vista img.on { opacity: 1; }
+  .vista p { position: absolute; left: 10px; right: 10px; bottom: 10px; background: var(--ground); padding: 10px 12px; border-radius: 4px; font-size: 15px; line-height: 1.35; }
+
+  /* ---------- Quién está detrás ---------- */
+  .quien { padding: 20px; }
+  .panel { position: relative; min-height: 110svh; overflow: hidden; border-radius: var(--tile); background: var(--deep); padding: 56px; }
+  .panel h2 { font-size: clamp(40px, 4.4vw, 68px); color: var(--ice); max-width: 9em; }
+  .retrato {
+    position: absolute; left: 56px; bottom: -8vw; width: 38vw; aspect-ratio: 1; overflow: hidden;
+    clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%, 0 16%, 16% 16%); border-radius: var(--tile);
+  }
+  .retrato video, .retrato img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.06); transition: transform 1.6s var(--ease); }
+  .panel:hover .retrato video { transform: scale(1); }
+  .retrato-dia { position: absolute; left: 56px; bottom: calc(38vw - 8vw - 6.08vw + 0px); width: 5.6vw; aspect-ratio: 1; border-radius: var(--tile); background: var(--accent); }
+  .bloques { position: absolute; left: 63%; top: 56px; right: 56px; display: grid; gap: 64px; }
+  .bloques h3 { font-size: var(--step-lead); letter-spacing: -.02em; line-height: 1.2; margin-bottom: 10px; }
+  .bloques p { font-size: var(--step-body); line-height: 1.55; max-width: 36ch; }
+  .pruebas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 16px; }
+  .pruebas a { display: block; border-radius: var(--tile); overflow: hidden; background: var(--ground); aspect-ratio: 4/3; }
+  .pruebas img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
+  .pruebas a:hover img { transform: scale(1.06); }
+
+  /* ---------- Preguntas ---------- */
+  .faq { display: grid; grid-template-columns: 4fr 8fr; gap: 24px; padding: 180px var(--m); }
+  .faq h2 { font-size: clamp(36px, 4vw, 64px); position: sticky; top: 96px; align-self: start; }
+  .faq .lista { display: grid; gap: 8px; }
+  details { background: var(--surface); border-radius: var(--tile); transition: background-color .3s; }
+  details summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 20px; min-height: 72px; padding: 0 24px; font-size: var(--step-lead); font-weight: 500; cursor: pointer; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary:hover { color: var(--ice); }
+  .mas { position: relative; width: 16px; height: 16px; flex: none; }
+  .mas::before, .mas::after { content: ""; position: absolute; left: 0; top: 6.5px; width: 16px; height: 3px; border-radius: 2px; background: currentColor; transition: transform .3s var(--ease); }
+  .mas::after { transform: rotate(90deg); }
+  details[open] { background: var(--action); color: var(--accent-ink); }
+  details[open] .mas::after { transform: rotate(0); }
+  details .resp { padding: 0 24px 24px; font-size: var(--step-body); max-width: 52ch; }
+
+  /* ---------- Cierre: la frase con hueco ---------- */
+  .cierre { padding: 160px var(--m) 180px; background: var(--surface); }
+  .cierre form { font-size: clamp(40px, 5.6vw, 96px); font-weight: 600; letter-spacing: -.045em; line-height: 1.1; max-width: 13em; }
+  .cierre input {
+    width: 7.2em; height: 1.05em; border: 0; border-radius: var(--tile); background: var(--surface2); color: var(--ink);
+    font: inherit; letter-spacing: -.03em; padding: 0 .2em; vertical-align: -.12em; font-size: .62em; height: 1.55em; width: 11em;
+  }
+  .cierre input::placeholder { color: #6f7b98; }
+  .cierre button { border: 0; border-radius: var(--tile); background: var(--action); color: #fff; font: inherit; letter-spacing: inherit; padding: 0 .2em; cursor: pointer; transition: background-color .25s, transform .25s var(--ease); }
+  .cierre button:hover { background: var(--accent); transform: translateY(-.04em); }
+  .cierre .expl { margin-top: 28px; font-size: var(--step-body); color: var(--muted); }
+
+  /* ---------- Pie: MJ TRADES construido con días ---------- */
+  footer { padding: 120px var(--m) 40px; }
+  .marca-dias { display: grid; grid-template-columns: 9fr 31fr; gap: 3vw; }
+  .palabra { display: grid; grid-auto-flow: column; grid-template-rows: repeat(5, auto); gap: 4px; min-width: 0; }
+  .palabra i { min-width: 0; aspect-ratio: 1; border-radius: 3px; background: var(--surface); transition: background-color .3s, transform .3s var(--ease); }
+  .palabra i.on { background: var(--accent); }
+  .palabra i.on.rojo { background: var(--loss); }
+  .palabra i.on:hover { transform: scale(1.25); background: var(--ice); }
+  .pie-cols { display: grid; grid-template-columns: repeat(4, 1fr) 2fr; gap: 24px; margin-top: 56px; font-size: 15px; }
+  .pie-cols h3 { font-size: 15px; letter-spacing: 0; font-weight: 500; color: var(--muted); margin-bottom: 10px; line-height: 1.3; }
+  .pie-cols a { display: block; text-decoration: none; padding: 3px 0; transition: color .2s; }
+  .pie-cols a:hover { color: var(--ice); }
+  .creditos { font-size: 15px; color: var(--muted); margin-top: 48px; max-width: 120ch; }
+  .creditos a { color: var(--ink); }
+  .ultima { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 32px; font-size: 15px; color: var(--muted); flex-wrap: wrap; }
+  .ultima .boton { min-height: 40px; font-size: 15px; }
+
+  /* ---------- Entrada de piezas (solo si hay script) ---------- */
+  .js .rv { opacity: 0; transform: translateY(26px); }
+  .js .rv.in { opacity: 1; transform: none; transition: opacity .8s var(--ease), transform .8s var(--ease); }
+  .js .seg.rv { transform: scaleX(.2); }
+  .js .seg.rv.in { transform: none; transition: transform 1.1s var(--ease), opacity .6s; }
+
+  /* ---------- Móvil ---------- */
+  @media (max-width: 900px) {
+    .nav .links { display: none; }
+    .nav .boton { margin-left: auto; }
+    .hero { padding-top: 110px; min-height: 0; padding-bottom: 0; }
+    .hero h1 { font-size: 11vw; }
+    .hero .texto { max-width: none; }
+    .hero .apoyo { font-size: 18px; margin: 18px 0 24px; }
+    .hero .boton { width: 100%; }
+    .escenario-movil { position: relative; margin: 40px calc(var(--m) * -1) 0; padding: 92px 16px 0; }
+    .escenario { position: absolute; inset: 0; --n: 72px; }
+    .dia-roto { left: 10px; top: 10px; width: 52px; font-size: 30px; }
+    .diario { position: relative; left: auto; top: auto; width: auto; padding-bottom: 28px; }
+    .diario { padding: 16px 12px 22px; }
+    .semana { gap: 4px; }
+    .d { min-width: 0; padding: 6px; aspect-ratio: auto; min-height: 58px; }
+    .d b { font-size: 12px; letter-spacing: -.02em; }
+    .d.roto .cruz { top: 6px; right: 5px; width: 9px; }
+    .cifras { gap: 5px; }
+    .cifras div { padding: 9px; }
+    .cifras strong { font-size: 19px; }
+    .frase { padding: 96px var(--m); justify-content: flex-start; }
+    .frase p { max-width: none; text-align: left; font-size: 24px; }
+    .duelo { grid-template-columns: 1fr; min-height: 0; }
+    .placa { padding: 16px; }
+    .placa-in { width: 100%; }
+    .lado-texto { padding: 24px var(--m) 56px; }
+    .lado-texto .desc { margin-top: 20px; }
+    .celdas { grid-template-columns: 1fr; }
+    .celdas a { min-height: 60px; }
+    .como { padding: 110px var(--m) 100px; }
+    .como h2 { font-size: 11vw; margin-bottom: 36px; }
+    .barra { flex-direction: column; height: auto; }
+    .seg { flex: none; min-height: 72px; }
+    .seg.s1, .seg.s2 { min-height: 96px; }
+    .seg.s3 { min-height: 220px; }
+    .seg p { font-size: 16px; font-weight: 400; margin-top: 8px; letter-spacing: 0; }
+    .pies { display: none; }
+    .cartel { padding: 64px var(--m); }
+    .cartel li { flex-direction: column; gap: 6px; padding-bottom: 22px; }
+    .cartel li .t { font-size: 11vw; }
+    .cartel li .v { font-size: 15px; }
+    .cartel li .im { display: block; width: 100%; aspect-ratio: 16/9; border-radius: var(--tile); object-fit: cover; margin-top: 8px; }
+    .vista { display: none; }
+    .quien { padding: 10px; }
+    .panel { padding: 28px 20px 0; min-height: 0; display: flex; flex-direction: column; }
+    .panel h2 { order: 1; } .bloques { order: 2; } .retrato { order: 3; }
+    .panel h2 { font-size: 8.5vw; }
+    .bloques { position: static; margin-top: 36px; gap: 36px; }
+    .retrato { position: relative; left: auto; bottom: auto; width: 86vw; margin: 40px auto -21vw; }
+    .retrato-dia { display: none; }
+    .faq { grid-template-columns: 1fr; padding: 110px var(--m); }
+    .faq h2 { position: static; font-size: 9vw; }
+    details summary { font-size: 18px; min-height: 64px; padding: 14px 20px; }
+    details .resp { font-size: 16px; padding: 0 20px 20px; }
+    .cierre { padding: 100px var(--m); }
+    .cierre form { font-size: 10vw; }
+    .cierre input { display: block; width: 100%; margin: 10px 0; font-size: .5em; }
+    .marca-dias { grid-template-columns: 1fr; gap: 10px; }
+    .marca-dias .palabra:first-child { width: 30%; }
+    .pie-cols { grid-template-columns: 1fr 1fr; }
+    .pie-cols .contacto { grid-column: 1 / -1; }
+  }
+  @media (min-width: 901px) { .escenario-movil { display: contents; } .seg p { display: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .js .rv, .js .seg.rv { opacity: 1; transform: none; }
+  }
+
+  /* ---------- Inicio nuevo (1-nov): toro de hielo, dinero que cae, elegante ---------- */
+  .hero2 { position: relative; min-height: 100svh; display: grid; align-items: center; padding: 120px var(--m) 80px; overflow: hidden; isolation: isolate; }
+  .h2-fondo { position: absolute; inset: -3%; z-index: -3; }
+  .h2-fondo img { width: 100%; height: 100%; object-fit: cover; object-position: 70% 50%; transform: translate3d(var(--hx, 0px), var(--hy, 0px), 0) scale(1.04); transition: transform .9s cubic-bezier(.2,.8,.2,1); will-change: transform; }
+  .h2-capa { position: absolute; inset: 0; z-index: -2; background: linear-gradient(90deg, rgba(3,4,8,.96) 0%, rgba(3,4,8,.78) 34%, rgba(3,4,8,.15) 62%, rgba(3,4,8,.25) 100%), linear-gradient(180deg, rgba(3,4,8,.5) 0%, transparent 20%, transparent 70%, var(--ground) 100%); }
+  .h2-flotan { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .fl { position: absolute; filter: drop-shadow(0 10px 18px rgba(0,0,0,.6)); will-change: transform; animation: flotar2 7s ease-in-out infinite; }
+  .fl1 { width: 64px; left: 46%; top: 16%; animation-duration: 8s; }
+  .fl2 { width: 120px; left: 56%; top: 70%; animation-duration: 9s; animation-delay: -2s; }
+  .fl3 { width: 44px; left: 40%; top: 74%; animation-duration: 6.5s; animation-delay: -4s; }
+  .fl4 { width: 96px; left: 88%; top: 12%; animation-duration: 10s; animation-delay: -1s; }
+  .fl5 { width: 100px; left: 92%; top: 58%; animation-duration: 8.5s; animation-delay: -5s; }
+  .fl6 { width: 40px; left: 50%; top: 40%; animation-duration: 7.5s; animation-delay: -3s; }
+  @keyframes flotar2 { 0%, 100% { transform: translate3d(0, 0, 0) rotate(-6deg); } 50% { transform: translate3d(0, -22px, 0) rotate(8deg); } }
+  .h2-txt { max-width: 640px; position: relative; }
+  .h2-sello { display: inline-flex; align-items: center; gap: 10px; padding: 7px 14px 7px 7px; border-radius: 99px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); font-size: 14px; font-weight: 500; color: #e6ecf8; }
+  .h2-sello img { width: 28px; height: 28px; border-radius: 8px; }
+  .hero2 h1 { font-size: clamp(3rem, 1rem + 6.2vw, 7rem); line-height: .95; letter-spacing: -.045em; margin: 26px 0 0; max-width: 9em; }
+  .hero2 h1 em { font-style: normal; background: linear-gradient(100deg, #b9f2ff 0%, #ffffff 35%, #7fd4ff 60%, #ffd76a 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .h2-apoyo { font-size: var(--step-lead); line-height: 1.4; color: #d6deec; margin: 26px 0 34px; max-width: 30ch; }
+  .h2-cta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .h2-boton { padding: 20px 34px; font-size: 18px; font-weight: 600; background: linear-gradient(180deg, #ffe7a3, #d9a72e); color: #1a1205; box-shadow: 0 10px 40px rgba(255,190,60,.25); }
+  .h2-boton:hover { transform: translateY(-2px); box-shadow: 0 16px 50px rgba(255,190,60,.38); }
+  .h2-sec { color: #e6ecf8; text-decoration: none; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,.35); padding-bottom: 2px; }
+  .h2-sec:hover { color: #fff; border-color: #fff; }
+  .h2-datos { list-style: none; padding: 0; margin: 46px 0 0; display: flex; gap: 34px; }
+  .h2-datos b { display: block; font-size: clamp(24px, 2.4vw, 34px); font-weight: 600; letter-spacing: -.03em; color: #fff; }
+  .h2-datos span { font-size: 14px; color: #a3afca; }
+  .h2-tarjeta { position: absolute; right: clamp(16px, 5vw, 80px); bottom: clamp(40px, 9vh, 110px); width: 300px; padding: 18px 20px; border-radius: 16px; background: rgba(10,14,26,.62); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(14px); box-shadow: 0 20px 60px rgba(0,0,0,.5); animation: flotar2 9s ease-in-out infinite; }
+  .h2-tarjeta span { font-size: 13px; color: #a3afca; }
+  .h2-tarjeta strong { display: block; font-size: 40px; font-weight: 600; letter-spacing: -.04em; color: #ff6b7a; margin: 2px 0 10px; }
+  .h2-barra { display: block; height: 6px; border-radius: 99px; background: rgba(255,255,255,.1); overflow: hidden; }
+  .h2-barra i { display: block; height: 100%; width: 91%; background: linear-gradient(90deg, #ff4d5e, #ffb020); }
+  .h2-tarjeta small { display: block; margin-top: 10px; font-size: 12.5px; color: #a3afca; }
+  .h2-tarjeta small b { color: #3dff9e; font-weight: 600; } .h2-tarjeta small b.rojo { color: #ff6b7a; }
+
+  /* El mes de ejemplo ahora vive en su propia sección */
+  .prueba { padding: 110px var(--m) 60px; display: grid; justify-items: center; gap: 40px; }
+  .prueba h2 { font-size: var(--step-head); text-align: center; max-width: 14em; }
+  .prueba .escenario-movil { display: block !important; position: relative; width: min(760px, 100%); margin: 0; padding: 0; }
+  .prueba .escenario, .prueba .dia-roto { display: none; }
+  .prueba .diario { position: relative; left: auto; top: auto; width: 100%; padding: 24px; background: var(--surface); box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+
+  /* Banda: logo + motivación financiera, más elegante */
+  .banda figure { border-radius: 14px; }
+  .banda figure img { filter: saturate(1.05) contrast(1.05); }
+  .banda figcaption { background: rgba(5,7,13,.72); backdrop-filter: blur(8px); border: 1px solid rgba(255,215,106,.25); color: #f3e2b8; letter-spacing: .02em; border-radius: 99px; padding: 5px 12px; }
+  .banda .logo-banda { background: radial-gradient(circle at 50% 40%, #0f2a4a, #05070d 70%); display: grid; place-items: center; }
+  .banda .logo-banda img { width: 62%; height: auto; object-fit: contain; border-radius: 22%; box-shadow: 0 0 60px rgba(127,212,255,.35); }
+
+  @media (max-width: 760px) {
+    .hero2 { align-items: end; padding: 110px var(--m) 46px; min-height: 100svh; }
+    .h2-capa { background: linear-gradient(180deg, rgba(3,4,8,.35) 0%, rgba(3,4,8,.2) 30%, rgba(3,4,8,.85) 62%, var(--ground) 100%); }
+    .h2-fondo img { object-position: 50% 20%; }
+    .hero2 h1 { font-size: 13vw; }
+    .h2-apoyo { font-size: 18px; margin: 18px 0 24px; }
+    .h2-boton { width: 100%; justify-content: center; text-align: center; }
+    .h2-datos { gap: 22px; margin-top: 30px; }
+    .h2-tarjeta { display: none; }
+    .fl1 { left: 70%; top: 14%; } .fl2 { left: 8%; top: 22%; width: 90px; } .fl3 { left: 82%; top: 40%; } .fl4, .fl5 { display: none; } .fl6 { left: 20%; top: 8%; }
+    .prueba { padding-top: 70px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .fl, .h2-tarjeta { animation: none !important; } }
+
+  /* Banner de MJ Trades en lugar de "Dos años sin ganar" (1-nov) */
+  .quien-banner { padding: 40px var(--m); }
+  .quien-banner img { display: block; width: 100%; height: auto; border-radius: 18px; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+  @media (max-width: 760px) { .quien-banner { padding: 24px var(--m); } .quien-banner img { border-radius: 12px; } }
+
+  /* ---------- Ver una imagen de la banda en grande ---------- */
+  .visor { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 20px; background: rgba(2,3,8,.88); opacity: 0; transition: opacity .25s ease; cursor: zoom-out; }
+  .visor.abierto { opacity: 1; }
+  .visor figure { margin: 0; display: grid; gap: 12px; justify-items: center; max-width: min(92vw, 900px); transform: scale(.94); transition: transform .35s cubic-bezier(.2,.9,.3,1.15); }
+  .visor.abierto figure { transform: none; }
+  .visor img { width: min(78vh, 90vw, 720px); height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 14px; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  .visor figcaption { color: #f3e2b8; font-size: 15px; letter-spacing: .04em; }
+  .visor .cerrar-visor { position: absolute; top: 16px; right: 16px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,.12); color: #fff; font-size: 26px; line-height: 1; cursor: pointer; }
+  @media (prefers-reduced-motion: reduce) { .visor, .visor figure { transition: none; } }
+
+  /* Gráfica de la portada: fondo oscuro de terminal, como en la opción 1 */
+  .placa-in { background: #0b1120; box-shadow: inset 0 0 0 1px rgba(120,150,210,.12), 0 30px 80px rgba(0,0,0,.45); }
+
+  /* ---------- Portal: transición de la portada al diario ---------- */
+  @property --hueco { syntax: '<length-percentage>'; inherits: false; initial-value: 0%; }
+  .portal { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; display: grid; place-items: center; }
+  .portal .velo-p { position: absolute; inset: 0; background: radial-gradient(circle at 50% 46%, #0d1a33 0%, #05070d 62%); }
+  .portal .luz-p { position: absolute; width: 140vmax; height: 140vmax; background: conic-gradient(from 0deg, transparent 0 70%, rgba(255,200,90,.22) 82%, transparent 92%); border-radius: 50%; opacity: 0; }
+  .portal .centro-p { position: relative; display: grid; justify-items: center; gap: 18px; }
+  .portal .logo-p { position: relative; width: 124px; height: 124px; }
+  .portal .logo-p img { width: 100%; height: 100%; border-radius: 28%; display: block; box-shadow: 0 0 0 1px rgba(255,210,120,.35), 0 0 60px rgba(255,190,70,.45), 0 0 140px rgba(255,170,40,.25); }
+  .portal .aro-p { position: absolute; inset: -14px; border-radius: 34%; border: 2px solid rgba(255,205,110,.8); opacity: 0; }
+  .portal .txt-p { font: 700 15px/1 "Bricolage Grotesque", system-ui, sans-serif; letter-spacing: .32em; text-transform: uppercase; color: #f3e2b8; opacity: 0; }
+  .portal .barra-p { width: 150px; height: 2px; border-radius: 2px; background: rgba(255,255,255,.12); overflow: hidden; opacity: 0; }
+  .portal .barra-p i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #b8862b, #ffd76a, #fff3c4); transform-origin: left; transform: scaleX(0); }
+
+  /* Salida (portada): un círculo oscuro crece desde donde tocaste y aparece el toro dorado */
+  .portal.sale .velo-p { clip-path: circle(0 at var(--px, 50%) var(--py, 50%)); animation: portalAbre .62s cubic-bezier(.7,0,.25,1) forwards; }
+  .portal.sale .luz-p { animation: portalLuz 1.1s linear .25s forwards; }
+  .portal.sale .logo-p { opacity: 0; transform: scale(.4) rotate(-12deg); animation: portalLogo .55s cubic-bezier(.2,1.5,.4,1) .3s forwards; }
+  .portal.sale .aro-p { animation: portalAro .9s ease-out .55s forwards; }
+  .portal.sale .txt-p { animation: portalTxt .4s ease .5s forwards; }
+  .portal.sale .barra-p { animation: portalTxt .3s ease .5s forwards; }
+  .portal.sale .barra-p i { animation: portalBarra .5s cubic-bezier(.5,0,.2,1) .55s forwards; }
+  @keyframes portalAbre { to { clip-path: circle(150% at var(--px, 50%) var(--py, 50%)); } }
+  @keyframes portalLuz { 0% { opacity: 0; transform: rotate(0); } 30% { opacity: 1; } 100% { opacity: .6; transform: rotate(200deg); } }
+  @keyframes portalLogo { to { opacity: 1; transform: none; } }
+  @keyframes portalAro { 0% { opacity: .9; transform: scale(.9); } 100% { opacity: 0; transform: scale(1.7); } }
+  @keyframes portalTxt { to { opacity: 1; } }
+  @keyframes portalBarra { to { transform: scaleX(1); } }
+
+  /* Llegada (diario): el toro se acerca y el oscuro se abre en círculo desde el centro dejando ver la app */
+  .portal.entra .velo-p { -webkit-mask: radial-gradient(circle at 50% 46%, transparent var(--hueco), #000 calc(var(--hueco) + 2px)); mask: radial-gradient(circle at 50% 46%, transparent var(--hueco), #000 calc(var(--hueco) + 2px)); animation: portalHueco .75s cubic-bezier(.65,0,.2,1) .28s forwards; }
+  .portal.entra .luz-p { opacity: .6; animation: portalLuzSale .7s ease .2s forwards; }
+  .portal.entra .logo-p { animation: portalLogoSale .7s cubic-bezier(.5,0,.2,1) .1s forwards; }
+  .portal.entra .txt-p, .portal.entra .barra-p { opacity: 1; animation: portalFuera .25s ease forwards; }
+  .portal.entra .barra-p i { transform: scaleX(1); }
+  @keyframes portalHueco { to { --hueco: 150%; } }
+  @keyframes portalLuzSale { to { opacity: 0; transform: rotate(120deg) scale(1.3); } }
+  @keyframes portalLogoSale { 0% { transform: none; opacity: 1; } 35% { transform: scale(.88); opacity: 1; } 100% { transform: scale(3.2); opacity: 0; filter: blur(6px); } }
+  @keyframes portalFuera { to { opacity: 0; } }
+  html.portal-llega main, html.portal-llega aside.lateral, html.portal-llega .barra-movil { animation: portalApp .9s cubic-bezier(.2,.8,.2,1) .3s both; }
+  @keyframes portalApp { from { opacity: 0; transform: scale(.965) translateY(10px); filter: blur(4px); } }
+  @media (prefers-reduced-motion: reduce) { .portal { display: none !important; } html.portal-llega main, html.portal-llega aside.lateral, html.portal-llega .barra-movil { animation: none; } }
+
+  /* La portada aparece tras el portal de regreso */
+  .portal[hidden] { display: none !important; }
+  html.portal-llega body > :not(.portal):not(script) { animation: portalApp .9s cubic-bezier(.2,.8,.2,1) .3s both; }
+  @media (prefers-reduced-motion: reduce) { html.portal-llega body > * { animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="portal entra" id="portal-llega" hidden aria-hidden="true"><div class="velo-p"></div><div class="luz-p"></div><div class="centro-p"><div class="logo-p"><img src="img/juego/app-icono.webp" alt=""><i class="aro-p"></i></div><span class="txt-p">Volviendo al inicio</span><span class="barra-p"><i></i></span></div></div>
+<script>
+// Llegada desde el diario: el portal se abre (solo si venías de ahí)
+(() => {
+  let viene = false; try { viene = sessionStorage.getItem('sf-portal') === 'inicio'; if (viene) sessionStorage.removeItem('sf-portal'); } catch {}
+  const pt = document.getElementById('portal-llega');
+  if (!viene || matchMedia('(prefers-reduced-motion: reduce)').matches) { pt.remove(); return; }
+  pt.hidden = false; document.documentElement.classList.add('portal-llega');
+  setTimeout(() => { pt.remove(); document.documentElement.classList.remove('portal-llega'); }, 1300);
+})();
+</script>
+<script>document.documentElement.classList.add('js')</script>
+
+<nav class="nav" aria-label="Principal">
+  <a class="marca" href="#"><img src="img/juego/app-icono.webp" alt="" width="40" height="40" style="border-radius:24%">Sangre Fría</a>
+  <div class="links">
+    <a href="#como">Cómo funciona</a>
+    <a href="#cuesta">Lo que más cuesta</a>
+    <a href="#quien">Quién está detrás</a>
+    <a href="#preguntas">Preguntas</a>
+  </div>
+  <a class="boton" href="app.html">Abrir mi diario</a>
+</nav>
+
+<header class="hero2">
+  <div class="h2-fondo" aria-hidden="true"><picture><source media="(max-width: 760px)" srcset="img/lujo/hero-movil.webp"><img src="img/lujo/hero.webp" alt="" fetchpriority="high"></picture></div>
+  <div class="h2-capa" aria-hidden="true"></div>
+  <div class="h2-flotan" aria-hidden="true">
+    <img class="fl fl1" src="img/juego/sp-moneda.webp" alt=""><img class="fl fl2" src="img/juego/sp-billete.webp" alt="">
+    <img class="fl fl3" src="img/juego/sp-moneda.webp" alt=""><img class="fl fl4" src="img/juego/sp-lingote.webp" alt="">
+    <img class="fl fl5" src="img/juego/sp-billete.webp" alt=""><img class="fl fl6" src="img/juego/sp-diamante.webp" alt="">
+  </div>
+  <div class="h2-txt">
+    <span class="h2-sello rv"><img src="img/juego/app-icono.webp" alt="">Gratis · by MJ Trades</span>
+    <h1 class="rv">Opera con <em>sangre fría</em>.</h1>
+    <p class="h2-apoyo rv">El diario de trading que te dice cuánto dinero te cuesta romper tus reglas. Anota en 20 segundos, sube de nivel y abre cofres siendo disciplinado.</p>
+    <div class="h2-cta rv"><a class="boton h2-boton" href="app.html">Abrir mi diario gratis</a><a class="h2-sec" href="#prueba">Pruébalo aquí abajo</a></div>
+    <ul class="h2-datos rv"><li><b>20 s</b><span>por trade</span></li><li><b>$0</b><span>sin tarjeta</span></li><li><b>24/7</b><span>en tu celular</span></li></ul>
+  </div>
+  <div class="h2-tarjeta rv" aria-hidden="true">
+    <span>Este mes, romper tus reglas te costó</span>
+    <strong id="h2-coste">$4,300</strong>
+    <i class="h2-barra"><i></i></i>
+    <small>Con tus reglas: <b>+$4,750</b> · Lo que hiciste: <b class="rojo">+$450</b></small>
+  </div>
+</header>
+
+<section class="prueba" id="prueba" aria-labelledby="t-prueba">
+  <h2 id="t-prueba" class="rv">Toca un día y mira cuánto cuesta.</h2>
+  <div class="escenario-movil">
+    <div class="escenario" aria-hidden="true"></div>
+    <div class="dia-roto" aria-hidden="true"><i class="cruz"></i></div>
+    <div class="diario" data-ui aria-label="Ejemplo interactivo de un mes de trading">
+      <div class="diario-cab"><b>Octubre · Cuenta de 50K</b><span>Ejemplo</span></div>
+      <div class="cifras">
+        <div><small>Lo que hiciste</small><strong id="c-real">$0</strong></div>
+        <div><small>Con tus reglas</small><strong id="c-plan">$0</strong></div>
+        <div class="coste" id="c-caja"><small>Te costó</small><strong id="c-coste">$0</strong></div>
+      </div>
+      <div class="semana" id="mes"></div>
+      <p class="pista">Toca un día para marcar que <b>rompiste tus reglas</b> y mira cómo cambia.</p>
+    </div>
+  
+</section>
+
+<section class="frase" aria-label="La idea">
+  <p class="rv">Ganaste $450 este mes <span class="mini"><img src="img/calendario-pnl.jpg" alt=""></span>. Con tus reglas eran $4,750 <span class="mini"><img src="img/grafico-stop.jpg" alt=""></span>. La diferencia no fue el mercado <span class="mini"><img src="assets/tickers-8085342806.jpg" alt=""></span>: fuiste tú, y se puede medir.</p>
+</section>
+
+<section class="duelo" aria-labelledby="t-duelo">
+  <div class="placa">
+    <div class="placa-in rv" data-ui>
+      <div class="fila">
+        <div><small>Lo que hiciste</small><strong id="p-real">-$100</strong></div>
+        <div style="text-align:right"><small>Con tus reglas</small><strong id="p-plan">+$1,000</strong></div>
+      </div>
+      <canvas id="p-graf" aria-label="Gráfica: tu cuenta real contra la cuenta con tus reglas"></canvas>
+      <div class="ley"><span><i style="background:#f2f7ff"></i>Real</span><span><i style="background:#2f7bff"></i>Con reglas</span><span><i style="background:#ff4d5e"></i>Lo que perdiste</span></div>
+    </div>
+  </div>
+  <div class="lado-texto">
+    <div class="pestanas" role="tablist" aria-label="Periodo">
+      <button role="tab" aria-selected="true" data-p="semana">Semana</button>
+      <button role="tab" aria-selected="false" data-p="mes">Mes</button>
+      <button role="tab" aria-selected="false" data-p="todo">Tres meses</button>
+    </div>
+    <div>
+      <h2 id="t-duelo" class="rv">Tu cuenta, contada dos veces.</h2>
+      <p class="desc rv">Cada trade cuenta como pasó y como habría pasado siguiendo tus reglas. La distancia entre las dos líneas es lo que te cuesta.</p>
+    </div>
+    <div class="celdas">
+      <a class="uno" href="app.html">Empezar mi diario</a>
+      <a class="dos" href="app.html?ejemplo=1">Ver un ejemplo completo</a>
+    </div>
+  </div>
+</section>
+
+<section class="banda" aria-label="El mundo del trading">
+  <div class="banda-pista" id="banda"></div>
+</section>
+
+<section class="como" id="como" aria-labelledby="t-como">
+  <h2 id="t-como" class="rv">Veinte segundos por trade.</h2>
+  <div class="barra" data-ui>
+    <div class="seg s1 rv">Dos minutos<p>Primero escribes tus reglas, tu cuenta y tu riesgo. Una sola vez.</p></div>
+    <div class="seg s2 rv">Veinte segundos<p>Luego anotas cada trade y dices si seguiste tus reglas.</p></div>
+    <div class="seg s3 rv">Cada semana: <em>lo que te costó</em><p>Al final ves cuánto te costó romperlas, regla por regla.</p></div>
+  </div>
+  <div class="pies">
+    <p class="rv">Primero escribes tus reglas, tu cuenta y tu riesgo. Una sola vez.</p>
+    <p class="rv">Luego anotas cada trade y dices si seguiste tus reglas.</p>
+    <p class="rv">Al final ves cuánto te costó romperlas, regla por regla, y cuánto te costaría en un año si sigues igual.</p>
+  </div>
+</section>
+
+<section class="cartel" id="cuesta" aria-labelledby="t-cuesta">
+  <h2 id="t-cuesta" class="oculto">Lo que más cuesta</h2>
+  <div class="vista" id="vista" aria-hidden="true">
+    <img src="img/grafico-stop.jpg" alt="" data-k="0">
+    <img src="assets/ny-stock-exchange-traders-floor-lc-u9.jpg" alt="" data-k="1">
+    <img src="assets/tickers-8085342806.jpg" alt="" data-k="2">
+    <img src="assets/wall-street-at-night-new-york-new.jpg" alt="" data-k="3">
+    <img src="assets/new-york-stock-exchange-trading-floor-on.jpg" alt="" data-k="4">
+    <p id="vista-txt"></p>
+  </div>
+  <ol id="reglas">
+    <li data-k="0" data-txt="Perdiste 2.4R donde tu plan perdía 1R."><span class="t">Mover el stop</span><span class="v">-$1,840</span><img class="im" src="img/grafico-stop.jpg" alt="Gráfico real con la zona de stop loss y take profit de un trade" loading="lazy"></li>
+    <li data-k="1" data-txt="Entraste para recuperar lo de antes, sin setup."><span class="t">Operar por venganza</span><span class="v">-$1,210</span><img class="im" src="assets/ny-stock-exchange-traders-floor-lc-u9.jpg" alt="Piso de la Bolsa de Nueva York en 1963, lleno de corredores" loading="lazy"></li>
+    <li data-k="2" data-txt="Arriesgaste 1.5% cuando tu plan dice 0.5%."><span class="t">Arriesgar de más</span><span class="v">-$960</span><img class="im" src="assets/tickers-8085342806.jpg" alt="Pizarra luminosa de cotizaciones" loading="lazy"></li>
+    <li data-k="3" data-txt="Operaste cuando tu horario ya había terminado."><span class="t">Fuera de horario</span><span class="v">-$720</span><img class="im" src="assets/wall-street-at-night-new-york-new.jpg" alt="Wall Street de noche" loading="lazy"></li>
+    <li data-k="4" data-txt="El tercer trade del día, cuando tu máximo es dos."><span class="t">Un trade de más</span><span class="v">-$450</span><img class="im" src="assets/new-york-stock-exchange-trading-floor-on.jpg" alt="Pantallas del piso de la Bolsa de Nueva York" loading="lazy"></li>
+  </ol>
+  <p class="nota">Ejemplo de un mes en una cuenta de 50K. Tu diario arma esta lista con tus propias reglas y tus propios números.</p>
+</section>
+
+<section class="quien-banner" id="quien" aria-label="MJ Trades">
+  <img src="img/banner-mj.webp" alt="MJ Trades: logo y banner del canal" loading="lazy">
+</section>
+
+<section class="faq" id="preguntas" aria-labelledby="t-faq">
+  <h2 id="t-faq" class="rv">Antes de empezar</h2>
+  <div class="lista">
+    <details name="faq" class="rv" open><summary>¿Cuánto cuesta?<i class="mas"></i></summary><p class="resp">Nada. Es gratis y lo va a seguir siendo. La hice para la comunidad de MJ Trades.</p></details>
+    <details name="faq" class="rv"><summary>¿Cómo calcula lo que habría pasado con mis reglas?<i class="mas"></i></summary><p class="resp">Cuando rompes una regla eliges qué habría pasado con tu plan: no habrías entrado ($0), el mismo trade con tu riesgo de siempre (lo recalcula solo) u otro resultado que escribes tú. El máximo de trades y la pérdida máxima del día los revisa la app sola.</p></details>
+    <details name="faq" class="rv"><summary>¿Y si romper una regla me salió bien?<i class="mas"></i></summary><p class="resp">También lo ves. La app te lo dice tal cual: esta vez te salió bien, pero eso fue suerte, no tu sistema. Con el tiempo los números enseñan qué hábito te cuesta de verdad.</p></details>
+    <details name="faq" class="rv"><summary>¿Sirve para cuentas de fondeo?<i class="mas"></i></summary><p class="resp">Sí. Pones tu drawdown máximo, trailing o estático, y te dice cuánto te queda antes de quemar la cuenta, con tus trades reales y con tus reglas.</p></details>
+    <details name="faq" class="rv"><summary>¿Dónde se guardan mis trades?<i class="mas"></i></summary><p class="resp">En tu cuenta, protegida: solo tú puedes verlos. Entras con tu correo, sin contraseñas, y tu diario se sincroniza entre tu celular y tu computadora. También puedes usarla sin cuenta y todo se queda en tu navegador.</p></details>
+    <details name="faq" class="rv"><summary>¿Funciona en el celular?<i class="mas"></i></summary><p class="resp">Sí, está hecha para anotar el trade desde el celular justo al cerrarlo, en unos veinte segundos.</p></details>
+    <details name="faq" class="rv"><summary>¿Me dice qué operar?<i class="mas"></i></summary><p class="resp">No. Es un diario: mide tu disciplina con tus propias reglas. No es asesoría financiera ni da señales.</p></details>
+  </div>
+</section>
+
+<section class="cierre" aria-labelledby="t-cierre">
+  <h2 id="t-cierre" class="oculto">Empieza hoy</h2>
+  <form id="f-cierre" action="app.html" method="get" class="rv">
+    Mi regla: <label class="oculto" for="i-regla">Tu regla número uno</label><input id="i-regla" name="regla" maxlength="80" placeholder="no mover el stop" autocomplete="off"><br>desde <button type="submit">hoy.</button>
+  </form>
+  <p class="expl">Te llevamos a tu diario con esa regla ya escrita. Gratis y sin registro.</p>
+</section>
+
+<footer>
+  <div class="marca-dias" id="marca-dias" role="img" aria-label="MJ Trades"></div>
+  <div class="pie-cols">
+    <div><h3>Diario</h3><a href="app.html">Abrir mi diario</a><a href="app.html?ejemplo=1">Ver un ejemplo</a><a href="#como">Cómo funciona</a></div>
+    <div><h3>Comunidad</h3><a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Discord</a><a href="https://www.youtube.com/@MJTrades01" target="_blank" rel="noopener">YouTube</a><a href="https://www.instagram.com/mj_tradesbo/" target="_blank" rel="noopener">Instagram</a></div>
+    <div><h3>Más</h3><a href="#cuesta">Lo que más cuesta</a><a href="#quien">Quién está detrás</a><a href="#preguntas">Preguntas</a></div>
+    <div><h3>Aviso</h3><p style="font-size:15px;line-height:1.45">Herramienta educativa. No es asesoría financiera.</p></div>
+    <div class="contacto"><h3>MJ Trades</h3><p style="font-size:15px;line-height:1.45">Trader de futuros y creador de contenido. Opero en vivo y comparto el proceso, con todo y errores.</p></div>
+  </div>
+  <p class="creditos">Fotos de archivo: <a href="https://commons.wikimedia.org/wiki/File:New_York_Stock_Exchange_trading_floor_on_Wall_Street,_New_York,_New_York_LCCN2011634218.tif">“New York Stock Exchange trading floor”</a> de Carol M. Highsmith, <a href="https://creativecommons.org/publicdomain/mark/1.0/">dominio público</a>; <a href="https://commons.wikimedia.org/wiki/File:Wall_Street_at_night,_New_York,_New_York_-_20221123.jpg">“Wall Street at night”</a> de Andre Carrotflower, <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Manhattan_at_night_north_of_Rockefeller_Center_(11226).jpg">“Manhattan at night north of Rockefeller Center”</a> de Rhododendrites, <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Tickers_(8085342806).jpg">“Tickers”</a> de Francisco Gonzalez, <a href="https://creativecommons.org/licenses/by/2.0">CC BY 2.0</a>; <a href="https://commons.wikimedia.org/wiki/File:NY_stock_exchange_traders_floor_LC-U9-10548-6.jpg">“NY stock exchange traders floor”</a> de Thomas J. O'Halloran, <a href="https://creativecommons.org/publicdomain/mark/1.0/">dominio público</a>; todas vía Wikimedia Commons. Las imágenes de lujo y del toro de hielo son ilustraciones creadas para Sangre Fría; el resto de fotos, vídeo y certificados son de MJ Trades.</p>
+  <div class="ultima"><span>© 2026 MJ Trades · Sangre Fría</span><a class="boton" href="#">Volver arriba</a></div>
+</footer>
+
+<script>
+/* ---------- Utilidades ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const QUIETO = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function dinero(n, signo = true) {
+  const abs = Math.abs(Math.round(n)).toLocaleString('en-US');
+  return n < 0 ? '-$' + abs : (signo && n > 0 ? '+$' : '$') + abs;
+}
+// Anima un número de su valor actual al nuevo
+function contar(el, fin, fmt) {
+  const ini = Number(el.dataset.v || 0); el.dataset.v = fin;
+  if (QUIETO || document.hidden) { el.textContent = fmt(fin); return; }
+  const t0 = performance.now();
+  const paso = t => {
+    const k = Math.min(1, (t - t0) / 700), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = fmt(ini + (fin - ini) * e);
+    if (k < 1) requestAnimationFrame(paso); else el.textContent = fmt(fin);
+  };
+  requestAnimationFrame(paso);
+}
+
+/* ---------- Hero: el mes de ejemplo que el visitante puede tocar ----------
+   Cada día tiene dos resultados: siguiendo las reglas y rompiéndolas. */
+const DIAS = [
+  [5, 500, -700], [6, -250, -950], [7, 750, 1250], [8, -250, -600], [9, 500, -250],
+  [12, 0, -500], [13, 500, -400], [14, -250, -250], [15, 1000, 300], [16, -250, -1100],
+  [19, 500, -350], [20, 250, -500], [21, -250, -750], [22, 750, 250], [23, 500, -300],
+  [26, -250, -800], [27, 500, -450], [28, 250, 1000], [29, -250, -700], [30, 500, -200]
+];
+const rotos = new Set([0, 1, 5, 9, 12, 15]);
+const mes = $('#mes');
+mes.innerHTML = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'].map(d => `<span class="dn">${d}</span>`).join('') +
+  DIAS.map((d, i) => `<button class="d" data-i="${i}" aria-pressed="false"><span>${d[0]}</span><b></b><i class="cruz"></i></button>`).join('');
+function pintarMes() {
+  let real = 0, plan = 0;
+  $$('.d', mes).forEach(b => {
+    const i = Number(b.dataset.i), [, limpio, roto] = DIAS[i], r = rotos.has(i);
+    const v = r ? roto : limpio;
+    real += v; plan += limpio;
+    b.classList.toggle('roto', r);
+    b.setAttribute('aria-pressed', r);
+    b.setAttribute('aria-label', `${DIAS[i][0]} de octubre: ${dinero(v)}${r ? ', rompiste tus reglas' : ''}`);
+    const el = $('b', b); el.textContent = dinero(v); el.className = v > 0 ? 'verde' : v < 0 ? 'rojo' : '';
+  });
+  const coste = plan - real;
+  const fR = $('#c-real'), fP = $('#c-plan');
+  contar(fR, real, dinero); fR.className = real >= 0 ? 'verde' : 'rojo';
+  contar(fP, plan, dinero); fP.className = plan >= 0 ? 'verde' : 'rojo';
+  contar($('#c-coste'), Math.max(coste, 0), v => dinero(v, false));
+  $('#c-caja').classList.toggle('cero', coste <= 0);
+}
+mes.addEventListener('click', e => {
+  const b = e.target.closest('.d'); if (!b) return;
+  const i = Number(b.dataset.i);
+  rotos.has(i) ? rotos.delete(i) : rotos.add(i);
+  b.classList.remove('pulso'); void b.offsetWidth; b.classList.add('pulso');
+  pintarMes();
+});
+pintarMes();
+
+/* ---------- Inicio: el fondo sigue un poco al ratón ---------- */
+const heroImg = document.querySelector('.h2-fondo img');
+if (heroImg && !QUIETO) addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse' || scrollY > innerHeight) return;
+  heroImg.style.setProperty('--hx', ((e.clientX / innerWidth - .5) * -18).toFixed(1) + 'px');
+  heroImg.style.setProperty('--hy', ((e.clientY / innerHeight - .5) * -12).toFixed(1) + 'px');
+}, { passive: true });
+
+/* ---------- Escaparate: la cuenta contada dos veces ---------- */
+const PERIODOS = {
+  semana: { real: [0, 250, -350, 150, -600, -100], plan: [0, 250, 500, 250, 750, 1000] },
+  mes: { real: [0, 500, -450, 300, 50, 700, -250, 600, 200, 450], plan: [0, 500, 1250, 1000, 2000, 2500, 2250, 3500, 4000, 4750] },
+  todo: { real: [0, -400, 300, -900, -200, 450, -600, 100, -350, -1250], plan: [0, 600, 1800, 2500, 3400, 4750, 5600, 7000, 8100, 9800] }
+};
+// Gráfica estilo plataforma de trading (la misma del panel de la app)
+const graficoPortada = (() => {
+  const SIN_MOV = QUIETO; let animGrafico = 0;
+  const r2 = n => Math.round(n * 100) / 100;
+  const dinero = (n, signo = false) => { n = r2(n); const dec = Number.isInteger(n) ? 0 : 2; const abs = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); return n < 0 ? '-$' + abs : (signo && n > 0 ? '+$' : '$') + abs; };
+  const corto = n => { const a = Math.abs(n); return a >= 10000 ? (n < 0 ? '-' : '+') + '$' + Math.round(a / 1000) + 'k' : a >= 1000 ? (n < 0 ? '-' : '+') + '$' + (a / 1000).toFixed(1).replace('.0', '') + 'k' : dinero(n, true); };
+  const pad = n => String(n).padStart(2, '0');
+  const hoyISO = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+  const deISO = t => { const [a, m, d] = t.split('-').map(Number); return new Date(a, m - 1, d); };
+return function (ID, lista, animar) {
+  const cv = document.getElementById(ID); if (!cv) return;
+  cancelAnimationFrame(animGrafico);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = cv.clientWidth, H = cv.clientHeight;
+  cv.width = W * dpr; cv.height = H * dpr;
+  const c = cv.getContext('2d');
+  let a = 0, b = 0;
+  const real = [0], plan = [0], fechas = [lista[0]?.t.fecha || hoyISO()];
+  for (const x of lista) { a += x.real; b += x.plan; real.push(r2(a)); plan.push(r2(b)); fechas.push(x.t.fecha); }
+  let min = Math.min(...real, ...plan), max = Math.max(...real, ...plan);
+  if (min === max) { min -= 1; max += 1; }
+  const holgura = (max - min) * 0.14; min -= holgura; max += holgura;
+  const movil = W < 520;
+  const izq = 8, der = movil ? 64 : 84, arr = 16, abj = 30;
+  const N = real.length;
+  const X = i => izq + (W - izq - der) * (N === 1 ? 0 : i / (N - 1));
+  const Y = v => arr + (H - arr - abj) * (1 - (v - min) / (max - min));
+  const FUENTE = '"Bricolage Grotesque", system-ui, sans-serif';
+
+  // Curva suave que no se pasa de los puntos (monótona), como en las plataformas de trading
+  const curva = vals => {
+    const pts = vals.map((v, i) => [X(i), Y(v)]);
+    c.moveTo(pts[0][0], pts[0][1]);
+    if (pts.length < 3) { pts.slice(1).forEach(q => c.lineTo(q[0], q[1])); return; }
+    const m = pts.map((q, i) => {
+      if (i === 0) return (pts[1][1] - q[1]) / (pts[1][0] - q[0]);
+      if (i === pts.length - 1) return (q[1] - pts[i - 1][1]) / (q[0] - pts[i - 1][0]);
+      const d0 = (q[1] - pts[i - 1][1]) / (q[0] - pts[i - 1][0]), d1 = (pts[i + 1][1] - q[1]) / (pts[i + 1][0] - q[0]);
+      return d0 * d1 <= 0 ? 0 : 2 / (1 / d0 + 1 / d1);
+    });
+    for (let i = 1; i < pts.length; i++) {
+      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], h = (x1 - x0) / 3;
+      c.bezierCurveTo(x0 + h, y0 + m[i - 1] * h, x1 - h, y1 - m[i] * h, x1, y1);
+    }
+  };
+  const curvaAtras = vals => { // la misma curva recorrida al revés (para cerrar áreas)
+    const inv = vals.slice().reverse(), idx = i => vals.length - 1 - i;
+    const pts = inv.map((v, i) => [X(idx(i)), Y(v)]);
+    c.lineTo(pts[0][0], pts[0][1]);
+    if (pts.length < 3) { pts.slice(1).forEach(q => c.lineTo(q[0], q[1])); return; }
+    const m = pts.map((q, i) => {
+      if (i === 0) return (pts[1][1] - q[1]) / (pts[1][0] - q[0]);
+      if (i === pts.length - 1) return (q[1] - pts[i - 1][1]) / (q[0] - pts[i - 1][0]);
+      const d0 = (q[1] - pts[i - 1][1]) / (q[0] - pts[i - 1][0]), d1 = (pts[i + 1][1] - q[1]) / (pts[i + 1][0] - q[0]);
+      return d0 * d1 <= 0 ? 0 : 2 / (1 / d0 + 1 / d1);
+    });
+    for (let i = 1; i < pts.length; i++) {
+      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], h = (x1 - x0) / 3;
+      c.bezierCurveTo(x0 + h, y0 + m[i - 1] * h, x1 - h, y1 - m[i] * h, x1, y1);
+    }
+  };
+  // Rayado diagonal (el mismo de la marca): rojo = lo que perdiste, verde = lo que ganaste de más
+  const rayas = col => {
+    const t = document.createElement('canvas'); t.width = t.height = 10 * dpr;
+    const g = t.getContext('2d'); g.scale(dpr, dpr); g.strokeStyle = col; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(-2, 12); g.lineTo(12, -2); g.moveTo(-2, 2); g.lineTo(2, -2); g.moveTo(8, 12); g.lineTo(12, 8); g.stroke();
+    const pat = c.createPattern(t, 'repeat'); pat.setTransform?.(new DOMMatrix().scale(1 / dpr)); return pat;
+  };
+  const RAYA_R = rayas('rgba(255,77,94,.55)'), RAYA_V = rayas('rgba(46,224,138,.45)');
+  const pastilla = (x, y, txt, fondo, tinta) => {
+    c.font = `800 ${movil ? 11 : 12}px ${FUENTE}`;
+    const w = c.measureText(txt).width + 14, h = 22;
+    c.fillStyle = fondo; c.beginPath(); c.roundRect(x, y - h / 2, w, h, 6); c.fill();
+    c.beginPath(); c.moveTo(x, y - 5); c.lineTo(x - 5, y); c.lineTo(x, y + 5); c.fill(); // pico como etiqueta de precio
+    c.fillStyle = tinta; c.textBaseline = 'middle'; c.fillText(txt, x + 7, y + .5);
+    return w;
+  };
+  let mira = null; // índice bajo el cursor
+
+  const pintar = k => { // k: fracción revelada (0-1)
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, W, H);
+    // Rejilla y eje de precios a la derecha
+    c.font = `600 11px ${FUENTE}`; c.textBaseline = 'middle';
+    for (let i = 0; i <= 4; i++) {
+      const y = arr + (H - arr - abj) * i / 4, v = max - (max - min) * i / 4;
+      c.strokeStyle = 'rgba(120,150,210,.08)'; c.lineWidth = 1; c.beginPath(); c.moveTo(izq, y); c.lineTo(W - der, y); c.stroke();
+      c.fillStyle = 'rgba(160,176,210,.55)'; c.fillText(corto(Math.abs(max - min) > 40 ? Math.round(v / 10) * 10 : Math.round(v)).replace('+', ''), W - der + 10, y);
+    }
+    // Fechas abajo
+    c.fillStyle = 'rgba(160,176,210,.55)'; c.textBaseline = 'alphabetic';
+    const fmt = f => deISO(f).toLocaleDateString('es', { day: 'numeric', month: 'short' }).replace('.', '');
+    const marcas = N < 2 ? [0] : [0, Math.round((N - 1) / 2), N - 1];
+    marcas.forEach((i, j) => { const t = fmt(fechas[i]), w = c.measureText(t).width; c.fillText(t, Math.min(Math.max(izq, X(i) - (j === 0 ? 0 : j === 2 ? w : w / 2)), W - der - w), H - 9); });
+    // Línea del cero
+    c.strokeStyle = 'rgba(185,220,255,.28)'; c.setLineDash([3, 5]); c.beginPath(); c.moveTo(izq, Y(0)); c.lineTo(W - der, Y(0)); c.stroke(); c.setLineDash([]);
+
+    c.save(); c.beginPath(); c.rect(0, 0, izq + (W - izq - der) * k + 1, H); c.clip(); // revela de izquierda a derecha
+    // Hueco entre las curvas: rojo donde las reglas iban por encima, verde donde ibas mejor
+    const hueco = () => { c.beginPath(); curva(plan); curvaAtras(real); c.closePath(); };
+    c.save(); c.beginPath(); curva(real); c.lineTo(X(N - 1), 0); c.lineTo(X(0), 0); c.closePath(); c.clip();
+    hueco(); c.fillStyle = 'rgba(255,77,94,.10)'; c.fill(); c.fillStyle = RAYA_R; c.fill(); c.restore();
+    c.save(); c.beginPath(); curva(real); c.lineTo(X(N - 1), H); c.lineTo(X(0), H); c.closePath(); c.clip();
+    hueco(); c.fillStyle = 'rgba(46,224,138,.08)'; c.fill(); c.fillStyle = RAYA_V; c.fill(); c.restore();
+    // Brillo bajo la curva con reglas
+    const g = c.createLinearGradient(0, Y(Math.max(...plan)), 0, H);
+    g.addColorStop(0, 'rgba(47,123,255,.32)'); g.addColorStop(1, 'rgba(47,123,255,0)');
+    c.beginPath(); curva(plan); c.lineTo(X(N - 1), H - abj); c.lineTo(X(0), H - abj); c.closePath(); c.fillStyle = g; c.fill();
+    // Las dos curvas
+    c.lineJoin = 'round'; c.lineCap = 'round';
+    c.beginPath(); curva(real); c.strokeStyle = 'rgba(230,236,248,.9)'; c.lineWidth = 2; c.stroke();
+    const gl = c.createLinearGradient(izq, 0, W - der, 0); gl.addColorStop(0, '#2f7bff'); gl.addColorStop(1, '#8fd0ff');
+    c.beginPath(); curva(plan); c.strokeStyle = 'rgba(47,123,255,.35)'; c.lineWidth = 9; c.stroke(); // halo (sin shadowBlur: más ligero)
+    c.beginPath(); curva(plan); c.strokeStyle = gl; c.lineWidth = 3; c.stroke();
+    c.restore();
+
+    const yr = Y(real.at(-1)), yp = Y(plan.at(-1)), xf = X(N - 1);
+    if (k === 1) {
+      // Medida de lo que te costó entre los dos finales
+      const dif = r2(plan.at(-1) - real.at(-1));
+      if (Math.abs(yr - yp) > 26) {
+        const xm = xf - 12, col = dif > 0 ? '#ff4d5e' : '#2ee08a';
+        c.strokeStyle = col; c.lineWidth = 1.5; c.setLineDash([3, 3]);
+        c.beginPath(); c.moveTo(xm, yp); c.lineTo(xm, yr); c.stroke(); c.setLineDash([]);
+        c.beginPath(); c.moveTo(xm - 4, yp); c.lineTo(xm + 4, yp); c.moveTo(xm - 4, yr); c.lineTo(xm + 4, yr); c.stroke();
+        c.font = `800 ${movil ? 11 : 12}px ${FUENTE}`; c.textBaseline = 'middle';
+        const txt = (dif > 0 ? 'Te costó ' : 'Ganaste de más ') + dinero(Math.abs(dif)), w = c.measureText(txt).width + 14, ym = (yr + yp) / 2;
+        c.fillStyle = 'rgba(10,14,26,.92)'; c.beginPath(); c.roundRect(xm - w - 8, ym - 11, w, 22, 6); c.fill();
+        c.strokeStyle = col; c.lineWidth = 1; c.stroke(); c.fillStyle = col; c.fillText(txt, xm - w - 1, ym + .5);
+      }
+      // Etiquetas de precio al final de cada curva
+      const sep = Math.abs(yr - yp) < 24 ? (yr < yp ? -12 : 12) : 0;
+      pastilla(W - der + 6, yp - sep, corto(plan.at(-1)), '#2f7bff', '#fff');
+      pastilla(W - der + 6, yr + sep, corto(real.at(-1)), '#e6ecf8', '#0a0e1a');
+    }
+    // Puntos finales (o los del cursor)
+    const i = mira ?? Math.round(k * (N - 1));
+    const punto = (x, y, col, r) => { c.beginPath(); c.arc(x, y, r + 4, 0, Math.PI * 2); c.fillStyle = col.replace(')', ',.22)').replace('rgb', 'rgba'); c.fill(); c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fillStyle = col; c.fill(); };
+    if (mira != null) {
+      const x = X(i);
+      c.strokeStyle = 'rgba(185,220,255,.35)'; c.lineWidth = 1; c.setLineDash([4, 4]);
+      c.beginPath(); c.moveTo(x, arr); c.lineTo(x, H - abj); c.stroke(); c.setLineDash([]);
+      punto(x, Y(plan[i]), 'rgb(77,163,255)', 4.5); punto(x, Y(real[i]), 'rgb(230,236,248)', 4);
+      // Cuadro con los datos de ese punto
+      const lineas = [[i ? fmt(fechas[i]) + ' · trade ' + i : 'Inicio', 'rgba(160,176,210,.9)'], ['Con reglas  ' + dinero(plan[i], true), '#8fd0ff'], ['Real  ' + dinero(real[i], true), '#e6ecf8']];
+      const d = r2(plan[i] - real[i]); if (i && d) lineas.push([(d > 0 ? 'Te costó  ' : 'De más  ') + dinero(Math.abs(d)), d > 0 ? '#ff7a85' : '#5ff0a8']);
+      c.font = `700 12px ${FUENTE}`;
+      const bw = Math.max(...lineas.map(l => c.measureText(l[0]).width)) + 22, bh = lineas.length * 18 + 14;
+      let bx = x + 12; if (bx + bw > W - der) bx = x - 12 - bw;
+      const by = Math.max(arr, Math.min(Math.min(Y(plan[i]), Y(real[i])) - bh / 2, H - abj - bh));
+      c.fillStyle = 'rgba(8,12,24,.94)'; c.beginPath(); c.roundRect(bx, by, bw, bh, 8); c.fill();
+      c.strokeStyle = 'rgba(77,163,255,.35)'; c.lineWidth = 1; c.stroke();
+      c.textBaseline = 'middle'; lineas.forEach(([t, col], j) => { c.fillStyle = col; c.fillText(t, bx + 11, by + 16 + j * 18); });
+    } else {
+      punto(X(i), Y(plan[i]), 'rgb(77,163,255)', 4.5); punto(X(i), Y(real[i]), 'rgb(230,236,248)', 4);
+    }
+  };
+  // Mira: sigue al cursor o al dedo y enseña cada trade
+  cv.onpointermove = e => {
+    if (N < 2) return;
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left;
+    const i = Math.max(0, Math.min(N - 1, Math.round((x - izq) / (W - izq - der) * (N - 1))));
+    if (i !== mira) { mira = i; pintar(1); }
+  };
+  cv.onpointerdown = cv.onpointermove;
+  cv.onpointerleave = () => { mira = null; pintar(1); };
+  if (!animar || SIN_MOV) { pintar(1); return; }
+  const t0 = performance.now();
+  const paso = t => { const k = Math.min(1, (t - t0) / 1500); pintar(1 - Math.pow(1 - k, 3)); if (k < 1) animGrafico = requestAnimationFrame(paso); else pintar(1); };
+  animGrafico = requestAnimationFrame(paso);
+};
+})();
+// Fechas de ejemplo para cada periodo
+const FECHAS = { semana: [26, 27, 28, 29, 30].map(d => `2026-10-${d}`), mes: Array.from({ length: 9 }, (_, i) => `2026-10-${String(2 + i * 3).padStart(2, '0')}`), todo: Array.from({ length: 9 }, (_, i) => { const d = new Date(2026, 7, 3 + i * 10); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }) };
+const aLista = (p, k) => p.real.slice(1).map((v, i) => ({ real: v - p.real[i], plan: p.plan[i + 1] - p.plan[i], t: { fecha: FECHAS[k][i] } }));
+let periodoPortada = 'semana', grafVista = false;
+function ponerPeriodo(k) {
+  periodoPortada = k; const p = PERIODOS[k];
+  graficoPortada('p-graf', aLista(p, k), grafVista);
+  contar($('#p-real'), p.real.at(-1), dinero); contar($('#p-plan'), p.plan.at(-1), dinero);
+  $$('.pestanas button').forEach(b => b.setAttribute('aria-selected', b.dataset.p === k));
+}
+// Se dibuja (animada) cuando la gráfica entra en pantalla, y se redibuja al cambiar el tamaño
+new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { grafVista = true; ponerPeriodo(periodoPortada); o.disconnect(); } }, { threshold: .35 }).observe($('#p-graf'));
+let tGraf; addEventListener('resize', () => { clearTimeout(tGraf); tGraf = setTimeout(() => graficoPortada('p-graf', aLista(PERIODOS[periodoPortada], periodoPortada), false), 150); });
+$('.pestanas').addEventListener('click', e => { const b = e.target.closest('button'); if (b) ponerPeriodo(b.dataset.p); });
+ponerPeriodo('semana');
+
+/* ---------- Banda: días con el mundo del trading dentro ---------- */
+const BANDA = [
+  ['logo', 'img/juego/app-icono.webp', 'Sangre Fría'],
+  ['img', 'img/lujo/monedas.webp', 'Oro'],
+  ['img', 'img/lujo/toro-lluvia.webp', 'Wall Street'],
+  ['img', 'img/lujo/miami.webp', 'El mundo es tuyo'],
+  ['img', 'img/lujo/billetes.webp', 'Paciencia'],
+  ['img', 'img/lujo/grafica.webp', 'Tu gráfica'],
+  ['img', 'img/lujo/cima.webp', 'La cima'],
+  ['img', 'img/lujo/reloj.webp', 'Tiempo'],
+  ['img', 'img/lujo/lluvia-dinero.webp', 'Disciplina'],
+  ['img', 'img/lujo/toro-oso.webp', 'Toro y oso'],
+  ['img', 'img/lujo/penthouse.webp', 'Tu penthouse'],
+  ['img', 'img/lujo/maletin.webp', 'Resultados'],
+  ['img', 'img/lujo/jet.webp', 'Libertad'],
+  ['img', 'img/lujo/whisky.webp', 'Sangre fría'],
+  ['img', 'img/lujo/boveda.webp', 'Tu bóveda'],
+  ['img', 'img/lujo/rey.webp', 'Jaque'],
+  ['img', 'img/lujo/fajo.webp', 'Payout'],
+  ['img', 'img/lujo/superauto.webp', 'La meta'],
+  ['img', 'img/lujo/escritorio.webp', 'Tu oficina'],
+  ['img', 'img/lujo/yate.webp', 'Sin prisa'],
+  ['img', 'img/lujo/gemelos.webp', 'Elegancia'],
+  ['img', 'img/lujo/tesoro.webp', 'El premio']
+];
+const figura = ([t, a, b]) => t === 'logo'
+  ? `<figure class="logo-banda"><img src="${a}" alt="${b}"><figcaption>${b}</figcaption></figure>`
+  : `<figure><img src="${a}" alt="${b}" loading="lazy"><figcaption>${b}</figcaption></figure>`;
+// La segunda copia solo sirve para que la banda gire sin cortes
+const bandaHtml = BANDA.map(figura).join('');
+$('#banda').innerHTML = bandaHtml + `<div style="display:contents" aria-hidden="true">${bandaHtml}</div>`;
+// La banda avanza sola; con el cursor (o el dedo) se arrastra a la izquierda o a la derecha.
+// Un toque sin arrastrar abre la imagen en grande.
+(() => {
+  const banda = $('.banda'), pista = $('#banda');
+  if (!banda || !pista) return;
+  const QUIETA = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let x = 0, encima = false, arr = null, vel = 0, ultimo = performance.now();
+  const mitad = () => pista.scrollWidth / 2;
+  const poner = () => { const m = mitad(); if (m) { x = ((x % m) - m) % m; } pista.style.transform = `translate3d(${x}px,0,0)`; };
+  function paso(t) {
+    const dt = Math.min(64, t - ultimo); ultimo = t;
+    if (!arr) {
+      if (Math.abs(vel) > .02) { x += vel * dt; vel *= Math.pow(.94, dt / 16); }   // inercia al soltar
+      else if (!encima && !QUIETA) x -= dt * .045;                                    // avance normal
+      poner();
+    }
+    requestAnimationFrame(paso);
+  }
+  requestAnimationFrame(paso);
+  banda.addEventListener('pointerenter', () => { encima = true; });
+  banda.addEventListener('pointerleave', () => { encima = false; });
+  banda.addEventListener('pointerdown', e => {
+    arr = { x0: e.clientX, y0: e.clientY, xi: x, t: performance.now(), px: e.clientX, movio: false, id: e.pointerId };
+    vel = 0;
+  });
+  addEventListener('pointermove', e => {
+    if (!arr || e.pointerId !== arr.id) return;
+    const dx = e.clientX - arr.x0;
+    if (!arr.movio && Math.abs(dx) > 6 && Math.abs(dx) > Math.abs(e.clientY - arr.y0)) { arr.movio = true; banda.classList.add('arrastrando'); try { banda.setPointerCapture(e.pointerId); } catch {} }
+    if (!arr.movio) return;
+    const ahora = performance.now();
+    vel = (e.clientX - arr.px) / Math.max(1, ahora - arr.t); arr.px = e.clientX; arr.t = ahora;
+    x = arr.xi + dx; poner();
+  });
+  const soltar = e => {
+    if (!arr || (e && e.pointerId !== arr.id)) return;
+    const fue = arr.movio; arr = null; banda.classList.remove('arrastrando');
+    if (!fue && e && e.type === 'pointerup') {
+      const fig = document.elementsFromPoint(e.clientX, e.clientY).map(el => el.closest('.banda figure')).find(Boolean);
+      if (fig) abrirVisor(fig);
+    }
+  };
+  addEventListener('pointerup', soltar); addEventListener('pointercancel', soltar);
+
+  function abrirVisor(fig) {
+    const img = fig.querySelector('img'), txt = fig.querySelector('figcaption')?.textContent || '';
+    const v = document.createElement('div');
+    v.className = 'visor'; v.setAttribute('role', 'dialog'); v.setAttribute('aria-label', txt);
+    v.innerHTML = `<button class="cerrar-visor" aria-label="Cerrar">×</button><figure><img src="${img.currentSrc || img.src}" alt="${txt}"><figcaption>${txt}</figcaption></figure>`;
+    const cerrar = () => { v.classList.remove('abierto'); setTimeout(() => v.remove(), 250); removeEventListener('keydown', tecla); };
+    const tecla = e => { if (e.key === 'Escape') cerrar(); };
+    v.addEventListener('click', cerrar); addEventListener('keydown', tecla);
+    document.body.appendChild(v); requestAnimationFrame(() => v.classList.add('abierto'));
+    v.querySelector('button').focus();
+  }
+})();
+
+/* ---------- Lista con vista previa ---------- */
+const vista = $('#vista'), reglas = $('#reglas');
+reglas.addEventListener('mouseover', e => {
+  const li = e.target.closest('li'); if (!li) return;
+  const k = li.dataset.k;
+  $$('img', vista).forEach(im => im.classList.toggle('on', im.dataset.k === k));
+  $('#vista-txt').textContent = li.dataset.txt;
+  vista.style.top = (li.offsetTop + li.offsetHeight / 2 - vista.offsetHeight / 2 + reglas.offsetTop) + 'px';
+  vista.classList.add('on');
+});
+reglas.addEventListener('mouseleave', () => vista.classList.remove('on'));
+
+/* ---------- Pie: MJ TRADES hecho con días del calendario ---------- */
+const LETRAS = {
+  M: ['10001', '11011', '10101', '10001', '10001'], J: ['0011', '0001', '0001', '1001', '0110'],
+  T: ['111', '010', '010', '010', '010'], R: ['1110', '1001', '1110', '1010', '1001'],
+  A: ['0110', '1001', '1111', '1001', '1001'], D: ['1110', '1001', '1001', '1001', '1110'],
+  E: ['111', '100', '110', '100', '111'], S: ['0111', '1000', '0110', '0001', '1110']
+};
+function palabra(txt, rojo) {
+  const cols = [];
+  [...txt].forEach((ch, n) => {
+    const f = LETRAS[ch];
+    for (let c = 0; c < f[0].length; c++) cols.push(f.map(r => r[c] === '1'));
+    if (n < txt.length - 1) cols.push([0, 0, 0, 0, 0].map(() => false));
+  });
+  let k = 0;
+  return `<div class="palabra" style="grid-template-columns:repeat(${cols.length},1fr)">` +
+    cols.map(col => col.map(on => `<i class="${on ? 'on' : ''}${on && k++ === rojo ? ' rojo' : ''}"></i>`).join('')).join('') + '</div>';
+}
+$('#marca-dias').innerHTML = palabra('MJ', -1) + palabra('TRADES', 23);
+
+/* ---------- Cierre: llevar la regla escrita al diario ---------- */
+$('#f-cierre').addEventListener('submit', e => {
+  if (!$('#i-regla').value.trim()) { e.preventDefault(); $('#i-regla').focus(); }
+});
+
+/* ---------- Entrada escalonada de cada sección ---------- */
+const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => {
+  for (const en of es) if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+}, { threshold: .15, rootMargin: '0px 0px -40px 0px' }) : null;
+$$('section, header').forEach(sec => $$('.rv', sec).forEach((el, i) => {
+  el.style.transitionDelay = (i * 80) + 'ms';
+  io ? io.observe(el) : el.classList.add('in');
+}));
+// Por si el observador no llega a disparar, nada queda escondido
+setTimeout(() => $$('.rv').forEach(el => { if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in'); }), 1200);
+
+/* ---------- Portal: al abrir el diario, transición antes de cambiar de página ---------- */
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const pre = document.createElement('link'); pre.rel = 'prefetch'; pre.href = 'app.html'; document.head.appendChild(pre);
+  document.addEventListener('click', e => {
+    // Netlify publica los enlaces como "/app" en vez de "app.html": se aceptan las dos formas
+    const a = e.target.closest('a[href]');
+    if (!a || a.origin !== location.origin || !/\/app(\.html)?$/.test(a.pathname) || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target === '_blank') return;
+    e.preventDefault();
+    const destino = a.href;
+    document.querySelector('.portal')?.remove();
+    document.body.insertAdjacentHTML('beforeend', `<div class="portal" aria-hidden="true"><div class="velo-p"></div><div class="luz-p"></div><div class="centro-p"><div class="logo-p"><img src="img/juego/app-icono.webp" alt=""><i class="aro-p"></i></div><span class="txt-p">Abriendo tu diario</span><span class="barra-p"><i></i></span></div></div>`);
+    const pt = document.querySelector('.portal');
+    pt.style.setProperty('--px', e.clientX ? e.clientX + 'px' : '50%'); pt.style.setProperty('--py', e.clientY ? e.clientY + 'px' : '50%');
+    pt.classList.add('sale');
+    try { sessionStorage.setItem('sf-portal', '1'); } catch {}
+    setTimeout(() => { location.href = destino; }, 1050);
+  });
+  // Si regresan con "atrás", la portada no se queda tapada
+  addEventListener('pageshow', e => { if (e.persisted) document.querySelector('.portal')?.remove(); });
+})();
+</script>
+</body>
+</html>
