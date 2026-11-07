@@ -1512,6 +1512,23 @@
     .cert-tipos { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; }
     .cert-tipo { flex: 0 0 138px; scroll-snap-align: start; }
   }
+
+  /* ========== v7.3: estilo Lucid — el tema cambia el FONDO; la app se queda neutra y el color va en detalles ========== */
+  .tema-velo::before, .tema-velo::after { display: none !important; }
+  [data-tema="oscuro"] body:not([data-fondo="noche"]) .cristal, [data-tema="oscuro"] .rk-p, [data-tema="oscuro"] .cert-item, [data-tema="oscuro"] .cert-tipo { background: rgba(var(--b1), .8); }
+  [data-tema="oscuro"] body:not([data-fondo="noche"]) aside.lateral { background: rgba(var(--b0), .78); }
+  .btn.pri, .menu .anotar { background: rgba(var(--ac), .16) !important; color: var(--neon2) !important; border: 1px solid rgba(var(--ac), .55) !important; box-shadow: none !important; }
+  .btn.pri:hover, .menu .anotar:hover { background: rgba(var(--ac), .28) !important; }
+  [data-tema="claro"] .btn.pri, [data-tema="claro"] .menu .anotar { color: var(--neon) !important; }
+  .pildora .bola { background: rgba(var(--ac), .22) !important; box-shadow: inset 0 0 0 1px rgba(var(--ac), .5) !important; }
+  .pildora button[aria-pressed="true"], .pestanas button[aria-pressed="true"], .pest-cuenta button[aria-pressed="true"] { color: var(--neon2) !important; }
+  [data-tema="claro"] .pildora button[aria-pressed="true"] { color: var(--neon) !important; }
+  .pestanas button[aria-pressed="true"], .pest-cuenta button[aria-pressed="true"] { background: rgba(var(--ac), .18) !important; box-shadow: inset 0 0 0 1px rgba(var(--ac), .5); }
+  .hola { background: rgba(var(--b1), .8) !important; }
+  .hola::after { background: radial-gradient(circle, rgba(var(--ac2), .1), transparent 70%) !important; }
+  .kpi-plan, .kpi-ver.bueno { background: rgba(var(--b1), .8) !important; box-shadow: inset 3px 0 0 rgba(var(--ac), .7); }
+  .cert-aviso { background: rgba(var(--b1), .8) !important; box-shadow: inset 3px 0 0 rgba(var(--ac), .7); }
+  .menu button[aria-current="true"] { background: rgba(255,255,255,.06) !important; }
 </style>
 </head>
 <body>
@@ -1726,7 +1743,7 @@
         <div id="cert-cuerpo"></div>
       </section>
 
-      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.<br><small style="opacity:.6">Versión 7.2</small></footer>
+      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.<br><small style="opacity:.6">Versión 7.3</small></footer>
     </main>
   </div>
 </div>
@@ -4396,10 +4413,13 @@ function aplicarTema() {
   const pon = (k, v) => raiz.setProperty(k, v), h = tonoDe(ac);
   pon('--neon', ac); pon('--neon2', ac2); pon('--acento', ac2);
   pon('--ac', rgbTxt(ac)); pon('--ac2', rgbTxt(ac2)); pon('--hi', rgbTxt(T.hi)); pon('--hielo', T.hi);
-  pon('--noche', T.noche); pon('--b0', rgbTxt(T.noche)); pon('--panel', T.panel); pon('--b1', rgbTxt(T.panel));
-  pon('--lateral', T.lat); pon('--mut', T.mut); pon('--ac-osc', mezclar(T.noche, ac, T.claro ? .14 : .3));
+  // Como en Lucid: el tema cambia el fondo; paneles, barra y textos se quedan casi neutros
+  const noche = T.claro ? T.noche : mezclar('#07080b', T.noche, .25), panel = T.claro ? T.panel : mezclar('#15171d', T.panel, .2);
+  const lat = T.claro ? T.lat : mezclar('#0a0b0f', T.lat, .2), mut = T.claro ? T.mut : mezclar('#9ba1ad', T.mut, .2);
+  pon('--noche', noche); pon('--b0', rgbTxt(noche)); pon('--panel', panel); pon('--b1', rgbTxt(panel));
+  pon('--lateral', lat); pon('--mut', mut); pon('--ac-osc', mezclar(noche, ac, T.claro ? .1 : .16));
   pon('--tinta', p.colorPropio ? '#fff' : (T.tinta || '#fff'));
-  pon('--blanco', T.claro ? '#15181d' : '#f2f7ff'); pon('--texto2', T.claro ? '#3b4048' : mezclar(T.mut, '#ffffff', .45));
+  pon('--blanco', T.claro ? '#15181d' : '#f2f7ff'); pon('--texto2', T.claro ? '#3b4048' : '#c9ced8');
   pon('--logo-f', T.logo || (T.claro ? 'none' : `hue-rotate(${Math.round(h - 45)}deg) saturate(1.15)`));
   pon('--glow', Math.min(p.brillo, topeBrillo()) / 100);
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', T.noche);
