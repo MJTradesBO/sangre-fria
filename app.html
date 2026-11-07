@@ -1743,7 +1743,7 @@
         <div id="cert-cuerpo"></div>
       </section>
 
-      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.<br><small style="opacity:.6">Versión 7.4</small></footer>
+      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.<br><small style="opacity:.6">Versión 7.5</small></footer>
     </main>
   </div>
 </div>
@@ -3234,21 +3234,19 @@ LOGO_CERT.onload = () => { if (vista === 'certificados') redibujarCerts(); if (v
 const usd = v => dinero(v, true) + ' USD';
 // Firma de MJ_benzz: trazo a mano con su rúbrica (subrayado que cruza y remata en un lazo)
 function firmaMJ(c, x, y, tam, color) {
+  tam = Math.round(tam * .72);
   c.save(); c.fillStyle = color; c.strokeStyle = color; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.shadowBlur = 0;
   c.font = `400 ${tam}px "Mrs Saint Delafield", "Brush Script MT", "Segoe Script", cursive`;
   c.fillText('MJ Benzz', x, y);
   const w = c.measureText('MJ Benzz').width;
-  c.lineCap = 'round'; c.lineJoin = 'round';
-  c.lineWidth = Math.max(2, tam * .05);
-  c.beginPath(); c.moveTo(x - w * .62, y + tam * .2);
-  c.bezierCurveTo(x - w * .2, y + tam * .5, x + w * .3, y + tam * .12, x + w * .6, y - tam * .18);
-  c.stroke();
-  c.lineWidth = Math.max(1.5, tam * .032);
-  c.beginPath(); c.moveTo(x + w * .6, y - tam * .18);
-  c.bezierCurveTo(x + w * .74, y - tam * .34, x + w * .58, y - tam * .46, x + w * .5, y - tam * .2);
-  c.bezierCurveTo(x + w * .46, y - tam * .05, x + w * .62, y + tam * .02, x + w * .72, y - tam * .06);
-  c.stroke();
-  c.beginPath(); c.arc(x + w * .47, y + tam * .3, tam * .04, 0, Math.PI * 2); c.fill();
+  // Un solo subrayado fino, que se adelgaza al final
+  c.lineCap = 'round';
+  for (const [g, a] of [[tam * .028, 1], [tam * .016, .9]]) {
+    c.globalAlpha = a; c.lineWidth = Math.max(1, g);
+    c.beginPath(); c.moveTo(x - w * .46, y + tam * .26);
+    c.bezierCurveTo(x - w * .05, y + tam * .34, x + w * .35, y + tam * .22, x + w * (g > tam * .02 ? .42 : .62), y + tam * (g > tam * .02 ? .12 : .02));
+    c.stroke();
+  }
   c.restore();
 }
 document.fonts?.load('40px "Mrs Saint Delafield"').then(() => programarRedibujo()).catch(() => {});
@@ -3358,7 +3356,7 @@ function certBase(cv, sem, o) {
     c.strokeStyle = T.noche; c.lineWidth = 3; c.beginPath(); c.arc(sx, sy, 48, 0, Math.PI * 2); c.stroke();
     if (lg) { c.save(); c.beginPath(); c.arc(sx, sy, 40, 0, Math.PI * 2); c.clip(); c.drawImage(logoTenido(T.tinta || '#ffffff', 160) || lg, sx - 40, sy - 40, 80, 80); c.restore(); }
   }
-  firmaMJ(c, W - 305, H - 134, 72, tx);
+  firmaMJ(c, W - 305, H - 114, 72, tx);
   c.fillStyle = `rgba(${acR},.6)`; c.fillRect(W - 470, H - 98, 330, 1.5);
   txt('Fundador · Sangre Fría', W - 140, H - 64, `600 21px ${F}`, mut, 'right');
 }
@@ -3479,7 +3477,7 @@ const DIBUJOS_CERT = {
     txt('SF', sx, sy + 20, `italic 700 56px ${SERIF}`, '#f6d9c8');
     c.fillStyle = '#9c1d24'; c.beginPath(); c.moveTo(sx - 40, sy + 70); c.lineTo(sx - 70, sy + 170); c.lineTo(sx - 40, sy + 150); c.lineTo(sx - 15, sy + 175); c.lineTo(sx - 5, sy + 80); c.fill();
     c.beginPath(); c.moveTo(sx + 40, sy + 70); c.lineTo(sx + 70, sy + 170); c.lineTo(sx + 40, sy + 150); c.lineTo(sx + 15, sy + 175); c.lineTo(sx + 5, sy + 80); c.fill();
-    firmaMJ(c, W - 330, 892, 78, '#2b1d0c');
+    firmaMJ(c, W - 330, 908, 78, '#2b1d0c');
     c.fillStyle = '#7b5a2a'; c.fillRect(W - 520, 922, 380, 2);
     txt('Fundador · Sangre Fría', W - 330, 962, `600 22px ${F}`, '#6b5333');
   },
@@ -3511,7 +3509,7 @@ const DIBUJOS_CERT = {
     c.fillStyle = '#9fb3a8'; c.fillRect(x + 50, y + 446, w - 100, 2);
     txt('MEMO', x + 50, y + 530, `700 18px ${F}`, '#4f6b5e', 'left');
     txt(frase, x + 130, y + 530, ajustar(frase, 640, 500, 26, F), '#1f3d30', 'left');
-    firmaMJ(c, x + w - 250, y + 522, 66, '#10241b');
+    firmaMJ(c, x + w - 250, y + 534, 66, '#10241b');
     c.fillStyle = '#1f3d30'; c.fillRect(x + w - 440, y + 548, 390, 2);
     txt(`⑆${sem.lunes.replace(/-/g, '')}⑆  ${String(sem.n).padStart(4, '0')}  ${String(sem.disc).padStart(3, '0')}⑈`, x + 50, y + 610, `700 28px ${MONO}`, '#3a5247', 'left');
     txt(sem.titulo.toUpperCase(), W / 2, H - 150, `800 46px ${F}`, T.claro ? T.ac : T.ac2);
@@ -3542,7 +3540,7 @@ const DIBUJOS_CERT = {
       txt(v, x, y + 130, ajustar(v, 220, 800, 50, F), col || '#fff', 'left');
     });
     txt('sangrefria.app', 100, H - 60, `700 22px ${F}`, 'rgba(255,255,255,.75)', 'left');
-    firmaMJ(c, W - 300, H - 98, 70, '#fff');
+    firmaMJ(c, W - 300, H - 86, 70, '#fff');
     c.fillStyle = 'rgba(255,255,255,.5)'; c.fillRect(W - 460, H - 72, 320, 1.5);
   },
 
