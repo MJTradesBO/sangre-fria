@@ -1,0 +1,19 @@
+{
+  "name": "Sangre Fría",
+  "short_name": "Sangre Fría",
+  "description": "Anota tus trades y descubre cuánto te cuesta romper tus reglas.",
+  "lang": "es",
+  "id": "/app.html",
+  "start_url": "/app.html?origen=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#02040a",
+  "theme_color": "#02040a",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    { "src": "/icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
