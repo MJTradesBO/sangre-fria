@@ -18,7 +18,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Anton&family=Press+Start+2P&family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Anton&family=Mrs+Saint+Delafield&family=Press+Start+2P&family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
 <style>
   /* Paleta sacada del logo MJ: noche, azul neón, hielo y blanco cromado.
      Verde y rojo solo para dinero y errores. */
@@ -1743,7 +1743,7 @@
         <div id="cert-cuerpo"></div>
       </section>
 
-      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.<br><small style="opacity:.6">Versión 7.3</small></footer>
+      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.<br><small style="opacity:.6">Versión 7.4</small></footer>
     </main>
   </div>
 </div>
@@ -3231,6 +3231,37 @@ function logoTenido(color, tam) {
 }
 LOGO_CERT.onload = () => { if (vista === 'certificados') redibujarCerts(); if (vista === 'panel') pintarMinis($('#panel-cuerpo')); };
 
+const usd = v => dinero(v, true) + ' USD';
+// Firma de MJ_benzz: trazo a mano con su rúbrica (subrayado que cruza y remata en un lazo)
+function firmaMJ(c, x, y, tam, color) {
+  c.save(); c.fillStyle = color; c.strokeStyle = color; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.shadowBlur = 0;
+  c.font = `400 ${tam}px "Mrs Saint Delafield", "Brush Script MT", "Segoe Script", cursive`;
+  c.fillText('MJ Benzz', x, y);
+  const w = c.measureText('MJ Benzz').width;
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  c.lineWidth = Math.max(2, tam * .05);
+  c.beginPath(); c.moveTo(x - w * .62, y + tam * .2);
+  c.bezierCurveTo(x - w * .2, y + tam * .5, x + w * .3, y + tam * .12, x + w * .6, y - tam * .18);
+  c.stroke();
+  c.lineWidth = Math.max(1.5, tam * .032);
+  c.beginPath(); c.moveTo(x + w * .6, y - tam * .18);
+  c.bezierCurveTo(x + w * .74, y - tam * .34, x + w * .58, y - tam * .46, x + w * .5, y - tam * .2);
+  c.bezierCurveTo(x + w * .46, y - tam * .05, x + w * .62, y + tam * .02, x + w * .72, y - tam * .06);
+  c.stroke();
+  c.beginPath(); c.arc(x + w * .47, y + tam * .3, tam * .04, 0, Math.PI * 2); c.fill();
+  c.restore();
+}
+document.fonts?.load('40px "Mrs Saint Delafield"').then(() => programarRedibujo()).catch(() => {});
+// Monto con "USD" más pequeño al lado
+function montoUSD(c, valor, x, y, tam, col, colUsd, al, F) {
+  c.save(); c.textBaseline = 'alphabetic';
+  c.font = `800 ${tam}px ${F}`; const w1 = c.measureText(valor).width;
+  c.font = `700 ${Math.round(tam * .42)}px ${F}`; const w2 = c.measureText(' USD').width;
+  const x0 = al === 'center' ? x - (w1 + w2) / 2 : al === 'right' ? x - w1 - w2 : x;
+  c.textAlign = 'left'; c.font = `800 ${tam}px ${F}`; c.fillStyle = col; c.fillText(valor, x0, y);
+  c.font = `700 ${Math.round(tam * .42)}px ${F}`; c.fillStyle = colUsd; c.fillText(' USD', x0 + w1, y);
+  c.restore();
+}
 function certBase(cv, sem, o) {
   const W = 1600, H = 1130, k = cv.width / W, c = cv.getContext('2d'), T = tc();
   const claro = !!T.claro, tx = claro ? '#15181d' : '#f4f6fb', mut = T.mut, ac = T.ac, ac2 = T.ac2, acR = T.acRgb;
@@ -3307,18 +3338,16 @@ function certBase(cv, sem, o) {
     ['DISCIPLINA', sem.disc + '%', tx, sem.disc],
     ['TRADES', String(sem.n), tx]
   ];
-  const x0 = 110, an = (W - 220 - 3 * 28) / 4, y0 = 735, al2 = 170;
-  cajas.forEach(([et, val, col, pct], i) => {
-    const x = x0 + i * (an + 28);
-    c.fillStyle = `rgba(${acR},${claro ? .07 : .1})`; c.strokeStyle = `rgba(${acR},${neon ? .6 : .28})`; c.lineWidth = 2;
-    c.beginPath(); c.roundRect(x, y0, an, al2, mini ? 10 : 16); c.fill(); c.stroke();
-    txt(et, x + 30, y0 + 50, `700 21px ${F}`, mut, 'left');
-    txt(val, x + 30, y0 + 128, `800 ${val.length > 9 ? 44 : 56}px ${F}`, col, 'left');
-    if (pct != null) { // anillo pequeño
-      const cx = x + an - 62, cy = y0 + al2 / 2 + 8, r = 34;
-      c.lineWidth = 9; c.strokeStyle = `rgba(${acR},.18)`; c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.stroke();
-      c.strokeStyle = ac; c.lineCap = 'round'; c.beginPath(); c.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pct / 100); c.stroke(); c.lineCap = 'butt';
-    }
+  const x0 = 110, an = (W - 220) / 4, y0 = 730;
+  c.fillStyle = `rgba(${acR},${neon ? .7 : .4})`; c.fillRect(x0, y0, W - 220, 1.5); c.fillRect(x0, y0 + 186, W - 220, 1.5);
+  cajas.forEach(([et, val, col], i) => {
+    const al3 = mini ? 'left' : 'center', cx = mini ? x0 + i * an + (i ? 36 : 0) : x0 + i * an + an / 2;
+    if (i) { c.fillStyle = `rgba(${acR},.28)`; c.fillRect(x0 + i * an, y0 + 38, 1.5, 110); }
+    c.save(); c.letterSpacing = '5px'; txt(et, cx, y0 + 70, `700 19px ${F}`, mut, al3); c.restore();
+    if (et === 'RESULTADO') {
+      let t = 60; c.font = `800 ${t}px ${F}`; while (c.measureText(val + ' USD').width > an - 50 && t > 30) { t -= 3; c.font = `800 ${t}px ${F}`; }
+      montoUSD(c, val, cx, y0 + 146, t, col, mut, al3, F);
+    } else txt(val, cx, y0 + 146, `800 60px ${F}`, col, al3, neon ? `rgba(${acR},.8)` : null);
   });
 
   // Pie: web, sello y firma
@@ -3329,9 +3358,9 @@ function certBase(cv, sem, o) {
     c.strokeStyle = T.noche; c.lineWidth = 3; c.beginPath(); c.arc(sx, sy, 48, 0, Math.PI * 2); c.stroke();
     if (lg) { c.save(); c.beginPath(); c.arc(sx, sy, 40, 0, Math.PI * 2); c.clip(); c.drawImage(logoTenido(T.tinta || '#ffffff', 160) || lg, sx - 40, sy - 40, 80, 80); c.restore(); }
   }
-  txt('MJ_benzz', W - 140, H - 128, `italic 600 50px ${SERIF}`, tx, 'right');
-  c.fillStyle = `rgba(${acR},.6)`; c.fillRect(W - 470, H - 108, 330, 2);
-  txt('Fundador · Sangre Fría', W - 140, H - 76, `600 21px ${F}`, mut, 'right');
+  firmaMJ(c, W - 305, H - 134, 72, tx);
+  c.fillStyle = `rgba(${acR},.6)`; c.fillRect(W - 470, H - 98, 330, 1.5);
+  txt('Fundador · Sangre Fría', W - 140, H - 64, `600 21px ${F}`, mut, 'right');
 }
 
 function pintarMinis(raiz) {
@@ -3389,7 +3418,7 @@ const certFrase = (o, sem) => (o.frase || sem.frase).trim();
 const certTier = sem => sem.disc >= 90 ? 'diamante' : sem.disc >= 75 ? 'oro' : sem.disc >= 50 ? 'plata' : 'bronce';
 const TIER = { diamante: ['Diamante', '#9fe8ff', '#4bb8ff'], oro: ['Oro', '#ffe08a', '#d79a1c'], plata: ['Plata', '#eef2f8', '#9aa6b8'], bronce: ['Bronce', '#f2b98a', '#a8642e'] };
 function certCifras(sem, o) {
-  return [o.dinero ? ['Resultado', dinero(sem.real, true), sem.real > 0 ? '#2ee08a' : sem.real < 0 ? '#ff4d5e' : null] : ['Días limpios', `${sem.diasLimpios}/${sem.dias}`, null],
+  return [o.dinero ? ['Resultado', usd(sem.real), sem.real > 0 ? '#2ee08a' : sem.real < 0 ? '#ff4d5e' : null] : ['Días limpios', `${sem.diasLimpios}/${sem.dias}`, null],
     ['Win rate', sem.wr == null ? '—' : sem.wr + '%', null], ['Disciplina', sem.disc + '%', null], ['Trades', String(sem.n), null]];
 }
 // Texto con contorno (memes) y texto que se parte en varias líneas
@@ -3450,7 +3479,7 @@ const DIBUJOS_CERT = {
     txt('SF', sx, sy + 20, `italic 700 56px ${SERIF}`, '#f6d9c8');
     c.fillStyle = '#9c1d24'; c.beginPath(); c.moveTo(sx - 40, sy + 70); c.lineTo(sx - 70, sy + 170); c.lineTo(sx - 40, sy + 150); c.lineTo(sx - 15, sy + 175); c.lineTo(sx - 5, sy + 80); c.fill();
     c.beginPath(); c.moveTo(sx + 40, sy + 70); c.lineTo(sx + 70, sy + 170); c.lineTo(sx + 40, sy + 150); c.lineTo(sx + 15, sy + 175); c.lineTo(sx + 5, sy + 80); c.fill();
-    txt('MJ_benzz', W - 330, 900, `italic 700 60px ${SERIF}`, '#2b1d0c');
+    firmaMJ(c, W - 330, 892, 78, '#2b1d0c');
     c.fillStyle = '#7b5a2a'; c.fillRect(W - 520, 922, 380, 2);
     txt('Fundador · Sangre Fría', W - 330, 962, `600 22px ${F}`, '#6b5333');
   },
@@ -3475,14 +3504,14 @@ const DIBUJOS_CERT = {
     txt('PÁGUESE A LA ORDEN DE', x + 50, y + 250, `700 20px ${F}`, '#4f6b5e', 'left');
     txt(nombre, x + 50, y + 330, ajustar(nombre, w - 560, 700, 76, SERIF), '#10241b', 'left');
     c.fillStyle = '#9fb3a8'; c.fillRect(x + 50, y + 350, w - 560, 2);
-    const monto = o.dinero ? dinero(sem.real, true) : sem.disc + '%';
+    const monto = o.dinero ? usd(sem.real) : sem.disc + '%';
     c.strokeStyle = '#1f5a43'; c.lineWidth = 3; c.beginPath(); c.roundRect(x + w - 440, y + 248, 390, 110, 12); c.stroke();
     txt(monto, x + w - 245, y + 328, ajustar(monto, 340, 800, 64, MONO), sem.real < 0 && o.dinero ? '#b3263a' : '#10241b');
     txt(`LA CANTIDAD DE: ${sem.disc}% DE DISCIPLINA Y ${sem.n} ${sem.n === 1 ? 'TRADE' : 'TRADES'} ANOTADOS`, x + 50, y + 430, ajustar(`LA CANTIDAD DE: ${sem.disc}% DE DISCIPLINA Y ${sem.n} TRADES ANOTADOS`, w - 100, 700, 28, F), '#1f3d30', 'left');
     c.fillStyle = '#9fb3a8'; c.fillRect(x + 50, y + 446, w - 100, 2);
     txt('MEMO', x + 50, y + 530, `700 18px ${F}`, '#4f6b5e', 'left');
     txt(frase, x + 130, y + 530, ajustar(frase, 640, 500, 26, F), '#1f3d30', 'left');
-    txt('MJ_benzz', x + w - 245, y + 528, `italic 700 54px ${SERIF}`, '#10241b');
+    firmaMJ(c, x + w - 250, y + 522, 66, '#10241b');
     c.fillStyle = '#1f3d30'; c.fillRect(x + w - 440, y + 548, 390, 2);
     txt(`⑆${sem.lunes.replace(/-/g, '')}⑆  ${String(sem.n).padStart(4, '0')}  ${String(sem.disc).padStart(3, '0')}⑈`, x + 50, y + 610, `700 28px ${MONO}`, '#3a5247', 'left');
     txt(sem.titulo.toUpperCase(), W / 2, H - 150, `800 46px ${F}`, T.claro ? T.ac : T.ac2);
@@ -3505,14 +3534,16 @@ const DIBUJOS_CERT = {
     txt(nombre, 100, 540, ajustar(nombre, 950, 800, 120, F), '#fff', 'left', 'rgba(0,0,0,.6)');
     c.fillStyle = T.ac; c.fillRect(100, 576, 160, 6);
     txt(frase, 100, 640, ajustar(frase, 900, 500, 32, F), 'rgba(255,255,255,.88)', 'left');
+    c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(100, 820, 1000, 1.5);
     cifras.forEach(([e, v, col], i) => {
       const x = 100 + i * 250, y = 820;
-      c.fillStyle = 'rgba(255,255,255,.1)'; c.strokeStyle = 'rgba(255,255,255,.25)'; c.lineWidth = 1.5;
-      c.beginPath(); c.roundRect(x, y, 228, 150, 16); c.fill(); c.stroke();
-      txt(e.toUpperCase(), x + 24, y + 48, `700 18px ${F}`, 'rgba(255,255,255,.7)', 'left');
-      txt(v, x + 24, y + 116, `800 ${v.length > 8 ? 38 : 50}px ${F}`, col || '#fff', 'left');
+      if (i) { c.fillStyle = 'rgba(255,255,255,.22)'; c.fillRect(x - 24, y + 34, 1.5, 100); }
+      c.save(); c.letterSpacing = '4px'; txt(e.toUpperCase(), x, y + 62, `700 17px ${F}`, 'rgba(255,255,255,.7)', 'left'); c.restore();
+      txt(v, x, y + 130, ajustar(v, 220, 800, 50, F), col || '#fff', 'left');
     });
-    txt('sangrefria.app', W - 100, H - 70, `700 24px ${F}`, 'rgba(255,255,255,.8)', 'right');
+    txt('sangrefria.app', 100, H - 60, `700 22px ${F}`, 'rgba(255,255,255,.75)', 'left');
+    firmaMJ(c, W - 300, H - 98, 70, '#fff');
+    c.fillStyle = 'rgba(255,255,255,.5)'; c.fillRect(W - 460, H - 72, 320, 1.5);
   },
 
   meme({ c, W, H, T, sem, o, txt, nombre, F }) {
@@ -3549,7 +3580,7 @@ const DIBUJOS_CERT = {
     txt('A LA LUNA', 96, 290, `400 64px Anton, Impact, sans-serif`, T.ac2, 'left');
     txt(nombre, 96, 380, ajustar(nombre, 820, 800, 64, F), '#fff', 'left');
     txt(sem.rango + ' · ' + frase, 96, 430, ajustar(sem.rango + ' · ' + frase, 860, 500, 26, F), 'rgba(255,255,255,.75)', 'left');
-    cifras.forEach(([e, v, col], i) => { txt(e.toUpperCase(), 96 + i * 205, 1010, `700 17px ${F}`, 'rgba(255,255,255,.6)', 'left'); txt(v, 96 + i * 205, 1060, `800 40px ${F}`, col || '#fff', 'left'); });
+    cifras.forEach(([e, v, col], i) => { txt(e.toUpperCase(), 96 + i * 205, 1010, `700 17px ${F}`, 'rgba(255,255,255,.6)', 'left'); txt(v, 96 + i * 205, 1060, ajustar(v, 190, 800, 40, F), col || '#fff', 'left'); });
     txt('sangrefria.app', W - 80, H - 50, `700 22px ${F}`, 'rgba(255,255,255,.7)', 'right');
   },
 
@@ -3595,7 +3626,7 @@ const DIBUJOS_CERT = {
     const filas = [['TRADES', sem.n], ['GANADOS', sem.gan], ['PERDIDOS', sem.per], ['BE', sem.be], ['WIN RATE', sem.wr == null ? '—' : sem.wr + '%'], ['DISCIPLINA', sem.disc + '%'], ['DÍAS LIMPIOS', `${sem.diasLimpios}/${sem.dias}`]];
     filas.forEach(([a, b], i) => { L(a, y + 360 + i * 46); L(String(b), y + 360 + i * 46, 'right'); });
     raya(y + 700);
-    L('TOTAL', y + 752, 'left', 800, 34); L(o.dinero ? dinero(sem.real, true) : '******', y + 752, 'right', 800, 34); raya(y + 792);
+    L('TOTAL', y + 752, 'left', 800, 34); L(o.dinero ? usd(sem.real) : '******', y + 752, 'right', 800, o.dinero && usd(sem.real).length > 11 ? 28 : 34); raya(y + 792);
     L('GRACIAS POR SEGUIR', y + 840, 'center', 700, 22); L('TUS REGLAS :)', y + 872, 'center', 700, 22);
     c.fillStyle = '#1c1c1c'; let bx = x + 80;
     for (let i = 0; bx < x + w - 80; i++) { const bw = [3, 6, 2, 4, 8, 2][(i * 7 + sem.n) % 6]; c.fillRect(bx, y + 905, bw, 60); bx += bw + 4; }
@@ -3618,7 +3649,7 @@ const DIBUJOS_CERT = {
     cifras.forEach(([e, v, col], i) => {
       const cx = x + 50 + (i % 2) * 250, cy = y + 740 + Math.floor(i / 2) * 110;
       c.fillStyle = 'rgba(255,255,255,.06)'; c.beginPath(); c.roundRect(cx, cy, 230, 96, 12); c.fill();
-      txt(e.toUpperCase(), cx + 18, cy + 34, `700 16px ${F}`, 'rgba(255,255,255,.6)', 'left'); txt(v, cx + 18, cy + 78, `900 36px ${F}`, col || '#fff', 'left');
+      txt(e.toUpperCase(), cx + 18, cy + 34, `700 16px ${F}`, 'rgba(255,255,255,.6)', 'left'); txt(v, cx + 18, cy + 78, ajustar(v, 200, 900, 36, F), col || '#fff', 'left');
     });
     const tx = T.claro ? '#15181d' : '#fff';
     txt('CARTA DE LA SEMANA', 880, 380, `800 28px ${F}`, T.mut, 'left');
@@ -3641,11 +3672,12 @@ const DIBUJOS_CERT = {
     txt(nombre, 920, 520, ajustar(nombre, 620, 700, 70, SERIF), '#fff', 'left');
     txt(sem.titulo + ' · ' + sem.rango, 920, 570, ajustar(sem.titulo + ' · ' + sem.rango, 620, 600, 26, F), '#bdbdbd', 'left');
     lineas(c, frase, 600).slice(0, 2).forEach((l, i) => txt(l, 920, 630 + i * 40, `500 28px ${F}`, '#9a9a9a', 'left'));
-    cifras.forEach(([e, v, col], i) => { const x = 920 + (i % 2) * 300, y = 780 + Math.floor(i / 2) * 110; txt(e.toUpperCase(), x, y, `700 18px ${F}`, '#8a8a8a', 'left'); txt(v, x, y + 50, `900 46px ${F}`, col || c1, 'left'); });
+    cifras.forEach(([e, v, col], i) => { const x = 920 + (i % 2) * 300, y = 780 + Math.floor(i / 2) * 110; txt(e.toUpperCase(), x, y, `700 18px ${F}`, '#8a8a8a', 'left'); txt(v, x, y + 50, ajustar(v, 280, 900, 46, F), col || c1, 'left'); });
+    firmaMJ(c, W - 300, H - 120, 62, '#d6d6d6');
     txt('sangrefria.app', W - 80, H - 50, `700 22px ${F}`, '#777', 'right');
   },
 
-  arcade({ c, W, H, T, sem, o, txt, nombre, cifras }) {
+  arcade({ c, W, H, T, sem, o, txt, ajustar, nombre, cifras }) {
     const P = '"Press Start 2P", ui-monospace, monospace';
     c.fillStyle = '#05010f'; c.fillRect(0, 0, W, H);
     c.strokeStyle = `rgba(${T.acRgb},.35)`; c.lineWidth = 2;
@@ -3660,7 +3692,7 @@ const DIBUJOS_CERT = {
     txt(sem.rango.toUpperCase(), W / 2, 340, `400 20px ${P}`, '#bbb');
     const vidas = Math.max(0, Math.min(sem.dias, 7));
     for (let i = 0; i < vidas; i++) txt('♥', W / 2 - (vidas - 1) * 30 + i * 60, 420, `400 40px ${P}`, i < sem.diasLimpios ? '#ff4f6d' : '#444');
-    cifras.forEach(([e, v], i) => { const x = 180 + i * 330; txt(e.toUpperCase(), x, 900, `400 18px ${P}`, '#aaa', 'left'); txt(v, x, 960, `400 34px ${P}`, '#ffe14a', 'left'); });
+    cifras.forEach(([e, v], i) => { const x = 180 + i * 330; txt(e.toUpperCase(), x, 900, `400 18px ${P}`, '#aaa', 'left'); txt(v, x, 960, ajustar(v, 300, 400, 34, P), '#ffe14a', 'left'); });
     txt('PULSA START · SANGREFRIA.APP', W / 2, 1060, `400 18px ${P}`, '#8a7bd9');
     c.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < H; y += 4) c.fillRect(0, y, W, 2);
   },
@@ -3676,7 +3708,7 @@ const DIBUJOS_CERT = {
     const L = [[`$ sangre-fria certificado --semana ${sem.lunes}`, '#e6e6e6'], ['', ''], ['> verificando trades ............ OK', gris],
       [`> trader ....................... ${nombre}`, '#fff'], [`> semana ....................... ${sem.rango}`, '#fff'],
       [`> trades ....................... ${sem.n}`, '#fff'], [`> win_rate ..................... ${sem.wr == null ? '—' : sem.wr + '%'}`, '#fff'],
-      [`> disciplina ................... ${sem.disc}%`, '#fff'], [`> resultado .................... ${o.dinero ? dinero(sem.real, true) : 'oculto'}`, o.dinero ? (sem.real < 0 ? '#ff6b7a' : '#3ee08a') : gris],
+      [`> disciplina ................... ${sem.disc}%`, '#fff'], [`> resultado .................... ${o.dinero ? usd(sem.real) : 'oculto'}`, o.dinero ? (sem.real < 0 ? '#ff6b7a' : '#3ee08a') : gris],
       ['', ''], [`> veredicto: ${sem.titulo.toUpperCase()}`, verde], [`> "${frase}"`, gris], ['', ''], ['[OK] certificado emitido por MJ_benzz · sangrefria.app', verde]];
     L.forEach(([t, col], i) => txt(t, x + 50, y + 130 + i * 52, `700 ${t.length > 62 ? 26 : 30}px ${MONO}`, col, 'left'));
     c.fillStyle = verde; c.fillRect(x + 50, y + 130 + L.length * 52 - 30, 20, 36);
@@ -3729,7 +3761,7 @@ function pintarCertificados() {
     <input type="file" id="i-cert-foto" accept="image/*" hidden>`;
   revelar(cuerpo);
   redibujarCerts(true);
-  document.fonts?.load('40px Anton').then(() => document.fonts.load('20px "Press Start 2P"')).then(() => document.fonts.load('italic 700 40px "Playfair Display"')).then(() => redibujarCerts(true)).catch(() => {});
+  document.fonts?.load('40px "Mrs Saint Delafield"').then(() => document.fonts.load('40px Anton')).then(() => document.fonts.load('20px "Press Start 2P"')).then(() => document.fonts.load('italic 700 40px "Playfair Display"')).then(() => redibujarCerts(true)).catch(() => {});
   $('#b-tarjeta').addEventListener('click', tarjeta);
 }
 function redibujarCerts(tipos) {
