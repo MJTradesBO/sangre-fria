@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sangre Fría · MJ Trades</title>
-<meta name="description" content="Anota tus trades y descubre cuánto te cuesta romper tus reglas. Gratis, por MJ Trades.">
+<title>Sangre Fría · MJ_benzz</title>
+<meta name="description" content="Anota tus trades y descubre cuánto te cuesta romper tus reglas. Gratis, por MJ_benzz.">
 <meta name="theme-color" content="#02040a">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="icono-32.png">
@@ -1246,7 +1246,7 @@
   <aside class="lateral">
     <a class="marca" href="index.html">
       <span class="logo"><img src="img/juego/app-icono.webp" alt="Sangre Fría"></span>
-      <span><b>Sangre Fría</b><small>by MJ Trades</small></span>
+      <span><b>Sangre Fría</b><small>by MJ_benzz</small></span>
     </a>
     <button class="ficha" id="ficha" aria-label="Tu perfil y tu pase"></button>
     <nav class="menu" id="menu">
@@ -1260,7 +1260,7 @@
     </nav>
     <button type="button" class="cuenta-chip" id="cuenta-chip" hidden></button>
     <div class="discord-card">
-      <b>Comunidad MJ Trades</b>
+      <b>Comunidad MJ_benzz</b>
       Comparte tu tarjeta y opera con más traders disciplinados.
       <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener"><svg width="18" height="18"><use href="#i-discord"/></svg>Entrar al Discord</a>
     </div>
@@ -1268,10 +1268,10 @@
 
   <div>
     <div class="barra-movil">
-      <a class="marca" href="index.html"><span class="logo"><img src="img/juego/app-icono.webp" alt="Sangre Fría"></span><span><b>Sangre Fría</b><small>by MJ Trades</small></span></a>
+      <a class="marca" href="index.html"><span class="logo"><img src="img/juego/app-icono.webp" alt="Sangre Fría"></span><span><b>Sangre Fría</b><small>by MJ_benzz</small></span></a>
       <a class="inicio-movil" href="index.html" aria-label="Página principal"><svg width="20" height="20"><use href="#i-casa"/></svg></a>
       <button class="ficha-movil" id="ficha-movil" aria-label="Tu perfil"></button>
-      <a class="dc" href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener" aria-label="Discord de MJ Trades"><svg width="20" height="20"><use href="#i-discord"/></svg></a>
+      <a class="dc" href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener" aria-label="Discord de MJ_benzz"><svg width="20" height="20"><use href="#i-discord"/></svg></a>
     </div>
 
     <main>
@@ -1279,7 +1279,7 @@
       <section id="v-portada" hidden>
         <div class="portada">
           <div>
-            <div class="sello"><img src="mj-logo.png" alt="">Gratis · por MJ Trades</div>
+            <div class="sello"><img src="mj-logo.png" alt="">Gratis · por MJ_benzz</div>
             <h1>Tus reglas<br>valen <span class="grad">dinero.</span><br>Mira cuánto.</h1>
             <p class="lead">Anota tus trades, marca cuándo rompiste tus reglas y descubre cuánto habrías ganado si las hubieras seguido.</p>
             <div style="display:flex;gap:12px;flex-wrap:wrap">
@@ -1374,7 +1374,7 @@
         </form>
       </section>
 
-      <footer>Hecho por <b>MJ Trades</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.</footer>
+      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.</footer>
     </main>
   </div>
 </div>
@@ -1668,6 +1668,18 @@ function revelar(raiz) {
    máxima diaria en el camino "con reglas". */
 const riesgoPlan$ = aj => aj.cuenta * aj.riesgo / 100;
 
+/* Un BE puede llevar una ganancia pequeña (hasta BE_MAX). Los trades viejos sin la
+   marca "be" siguen contando como BE si su resultado fue $0. */
+const BE_MAX = 100;
+const esBE = t => t.be === true || t.resultado === 0;
+const esGanado = t => !esBE(t) && t.resultado > 0;
+const esPerdido = t => !esBE(t) && t.resultado < 0;
+// Win rate: ganados entre ganados + perdidos (los BE no cuentan). null si no hay ninguno.
+function winRate(trades) {
+  const g = trades.filter(esGanado).length, p = trades.filter(esPerdido).length;
+  return g + p ? Math.round(g / (g + p) * 100) : null;
+}
+
 function resultadoPlanBase(t, aj) {
   if (t.ok) return t.resultado;
   if (t.plan === 'nada') return 0;
@@ -1799,7 +1811,9 @@ function pintarPanel() {
   const limpios = lista.filter(x => !x.roto), rotos = lista.filter(x => x.roto);
   const pctDisc = Math.round(limpios.length / lista.length * 100);
   const media = arr => arr.length ? r2(arr.reduce((s, x) => s + x.real, 0) / arr.length) : 0;
-  const winrate = arr => arr.length ? Math.round(arr.filter(x => x.real > 0).length / arr.length * 100) : 0;
+  const winrate = arr => winRate(arr.map(x => x.t)) ?? 0;
+  const tradesPeriodo = lista.map(x => x.t), wr = winRate(tradesPeriodo);
+  const nGan = tradesPeriodo.filter(esGanado).length, nPer = tradesPeriodo.filter(esPerdido).length, nBE = tradesPeriodo.filter(esBE).length;
   const diasOperados = new Set(lista.map(x => x.t.fecha)).size;
   const anual = coste > 0 ? Math.round(coste / diasOperados * 240) : 0;
   const racha = rachaLimpia(todos);
@@ -1825,7 +1839,7 @@ function pintarPanel() {
     const linea = (f, quien) => f.quemada
       ? `<span class="rojo"><b>${quien}: cuenta quemada</b> el ${nombreDia(f.quemada).toLowerCase()}.</span>`
       : `${quien}: te quedan <b class="num" style="font-size:16px">${dinero(f.margen)}</b> antes de quemarla.`;
-    fondeo = `<div class="cristal s3 ancho aparece"><span class="etiqueta">Cuenta de fondeo · drawdown ${aj.ddTipo === 'trailing' ? 'trailing' : 'estático'} de ${dinero(aj.dd)}</span>
+    fondeo = `<div class="cristal s6 aparece"><span class="etiqueta">Cuenta de fondeo · drawdown ${aj.ddTipo === 'trailing' ? 'trailing' : 'estático'} de ${dinero(aj.dd)}</span>
       <div class="tanque"><i data-w="${pr}"></i><u style="left:calc(${pp}% - 1px)" title="Con tus reglas"></u></div>
       <p style="margin:10px 0 4px">${linea(fr, 'Real')}</p><p style="margin:0" class="hielo">${linea(fp, 'Con tus reglas')}</p></div>`;
   }
@@ -1855,10 +1869,15 @@ function pintarPanel() {
         ? `<span class="etiqueta">Si sigues así</span><span class="num rojo" data-n="${-anual}">$0</span><p>Es lo que te costaría en un año de trading (240 días) al ritmo de ${nombreP}.</p>`
         : `<span class="etiqueta">Si sigues así</span><span class="num hielo">$0</span><p>No estás perdiendo dinero por romper reglas. Mantén el ritmo.</p>`}</div>
 
+      <div class="cristal s3 ancho dato aparece" id="win-rate"><span class="etiqueta">Win rate</span>
+        ${wr === null ? '<span class="num">—</span>' : `<span class="num" data-n="${wr}" data-f="p">0%</span>`}
+        <p><b class="verde">${nGan} ${nGan === 1 ? 'ganado' : 'ganados'}</b> · <b class="rojo">${nPer} ${nPer === 1 ? 'perdido' : 'perdidos'}</b> · <b>${nBE} BE</b></p>
+        <p style="margin-top:4px">Los BE no cuentan en el porcentaje.</p></div>
+
       <div class="cristal s3 ancho aparece"><span class="etiqueta">Un trade promedio</span>
         <div class="comparar">
-          <div class="fila"><span>Con reglas<br><small class="mut">${winrate(limpios)}% ganadores</small></span>${barra(mL, 'linear-gradient(90deg,#b9dcff,#2f7bff)')}<b class="${claseDinero(mL)}">${limpios.length ? dinero(mL, true) : '—'}</b></div>
-          <div class="fila"><span>Sin reglas<br><small class="mut">${winrate(rotos)}% ganadores</small></span>${barra(mR, 'linear-gradient(90deg,#ff7a85,#ff4d5e)')}<b class="${claseDinero(mR)}">${rotos.length ? dinero(mR, true) : '—'}</b></div>
+          <div class="fila"><span>Con reglas<br><small class="mut">${winrate(limpios)}% win rate</small></span>${barra(mL, 'linear-gradient(90deg,#b9dcff,#2f7bff)')}<b class="${claseDinero(mL)}">${limpios.length ? dinero(mL, true) : '—'}</b></div>
+          <div class="fila"><span>Sin reglas<br><small class="mut">${winrate(rotos)}% win rate</small></span>${barra(mR, 'linear-gradient(90deg,#ff7a85,#ff4d5e)')}<b class="${claseDinero(mR)}">${rotos.length ? dinero(mR, true) : '—'}</b></div>
         </div></div>
       ${fondeo}
 
@@ -2130,7 +2149,7 @@ function pintarHistorial() {
       html += `<div class="cristal trade aparece ${x.roto ? 'roto' : ''}">
         <div class="t-info"><div class="t1">${esc(t.activo || 'Trade')} ${t.dir ? `<span class="mut" style="font-weight:500">· ${t.dir === 'long' ? 'Long' : 'Short'}</span>` : ''}</div>
           <div class="t2">Riesgo ${t.riesgo}% · ${x.roto ? '<span class="rojo">rompiste reglas</span>' : '<span class="verde">siguiendo tus reglas</span>'}</div></div>
-        <div class="cifra"><small>Real</small><b class="${claseDinero(x.real)}">${dinero(x.real, true)}</b></div>
+        <div class="cifra"><small>${esBE(t) ? 'Real · BE' : 'Real'}</small><b class="${claseDinero(x.real)}">${dinero(x.real, true)}</b></div>
         <div class="cifra"><small>Con reglas</small><b class="${claseDinero(x.plan)}">${dinero(x.plan, true)}</b></div>
         ${rotas.length || x.auto.length || t.emocion ? `<div class="etiquetas">
           ${rotas.map(r => `<span class="etq">${esc(r)}</span>`).join('')}
@@ -2273,6 +2292,13 @@ const FLECHA = { long: ICO('long'), short: ICO('short') };
 const VERDE = '#2ee08a', ROJO = '#ff4d5e', AZUL = '#2f7bff';
 const nombreTr = i => edit.items.length > 1 ? 'Trade ' + (i + 1) : 'Tu trade';
 
+const textoMonto = s => s === -1 ? '¿Cuánto perdiste en $?' : s === 0 ? `¿Ganaste algo? Opcional, máx. $${BE_MAX}` : '¿Cuánto ganaste en $?';
+// En un BE el importe es una ganancia pequeña opcional; nunca resta
+const valorItem = it => {
+  const m = Math.abs(parseFloat(it.monto) || 0);
+  return r2(it.s === 0 ? m : (it.s ?? 0) * m);
+};
+
 function htmlItem(it, i) {
   return `<div class="tr" data-i="${i}" data-res="${it.s ?? ''}">
     <div class="tr-cab"><b>${nombreTr(i)}</b><span class="tr-res"></span></div>
@@ -2285,7 +2311,7 @@ function htmlItem(it, i) {
       <button type="button" class="r-be" data-s="0" aria-pressed="${it.s === 0}">${ICO('be')}BE</button>
       <button type="button" class="r-pierde" data-s="-1" aria-pressed="${it.s === -1}">${ICO('pierde')}Perdido</button>
     </div>
-    <input type="number" data-monto min="0" step="any" inputmode="decimal" placeholder="${it.s === -1 ? '¿Cuánto perdiste en $?' : it.s === 0 ? 'BE: $0' : '¿Cuánto ganaste en $?'}" value="${it.monto}" ${it.s === 0 ? 'disabled' : ''}>
+    <input type="number" data-monto min="0" step="any" inputmode="decimal" placeholder="${textoMonto(it.s)}" value="${it.monto}">
   </div>`;
 }
 function pintarItems() {
@@ -2328,7 +2354,7 @@ function abrirTrade(id) {
   const t = id ? datos.trades.find(x => x.id === id) : null;
   edit = {
     ids: t ? [t.id] : [], paso: 1, ok: t ? t.ok : null, rotas: new Set(t?.rotas || []), plan: t?.plan || null, emocion: t?.emocion || '',
-    items: t ? [{ dir: t.dir || '', s: Math.sign(t.resultado), monto: Math.abs(t.resultado) || '' }] : [{ dir: '', s: null, monto: '' }],
+    items: t ? [{ dir: t.dir || '', s: esBE(t) ? 0 : Math.sign(t.resultado), monto: Math.abs(t.resultado) || '' }] : [{ dir: '', s: null, monto: '' }],
     rotosIdx: new Set(t ? [0] : []),
     otros: t?.planRes != null ? [{ s: Math.sign(t.planRes), monto: Math.abs(t.planRes) || '' }] : []
   };
@@ -2351,7 +2377,7 @@ const rotosI = () => edit.ok !== false ? [] : edit.items.length === 1 ? [0] : [.
 
 function pintarCuales() {
   $('#chips-tr').innerHTML = edit.items.map((it, i) => {
-    const v = r2((it.s ?? 0) * Math.abs(parseFloat(it.monto) || 0));
+    const v = valorItem(it);
     return `<button type="button" class="chip err" data-tr="${i}" aria-pressed="${edit.rotosIdx.has(i)}">Trade ${i + 1} · ${dinero(v, true)}</button>`;
   }).join('');
 }
@@ -2388,7 +2414,8 @@ function leerTrades() {
       activo: fT.activo.value.trim().toUpperCase(),
       dir: it.dir,
       riesgo: parseFloat(fT.riesgo.value) || 0,
-      resultado: r2((it.s ?? 0) * Math.abs(parseFloat(it.monto) || 0)),
+      resultado: valorItem(it),
+      be: it.s === 0,
       ok: edit.ok === null ? null : !roto,
       rotas: roto ? [...edit.rotas] : [],
       plan: roto ? edit.plan : null,
@@ -2447,7 +2474,7 @@ function actualizarTrade() {
     const t = ts[i]; if (!t) return;
     const it = edit.items[i], el = $('.tr-res', c);
     c.dataset.res = it.s ?? '';
-    el.textContent = it.s === null ? '' : it.s === 0 ? 'BE' : it.monto === '' ? '' : dinero(t.resultado, true);
+    el.textContent = it.s === null ? '' : it.s === 0 ? (t.resultado ? `BE · ${dinero(t.resultado, true)}` : 'BE') : it.monto === '' ? '' : dinero(t.resultado, true);
     el.className = 'tr-res ' + claseDinero(t.resultado);
   });
   const suma = (l, f) => r2(l.reduce((s, t) => s + f(t), 0));
@@ -2456,7 +2483,7 @@ function actualizarTrade() {
   $('#op-otro').textContent = rotos.length && edit.plan === 'otro' ? dinero(suma(rotos, t => t.planRes || 0), true) : '—';
 
   const real = suma(ts, t => t.resultado), plan = suma(ts, t => t.ok === false ? resultadoPlanBase(t, aj) : t.resultado);
-  const n = ts.length, gan = ts.filter(t => t.resultado > 0).length, per = ts.filter(t => t.resultado < 0).length;
+  const n = ts.length, gan = ts.filter(esGanado).length, per = ts.filter(esPerdido).length;
   $('#vp-real-txt').textContent = n > 1 ? `Real · ${n} trades` : 'Resultado real';
   const vr = $('#vp-real'), vp = $('#vp-plan');
   vr.dataset.n = real; vr.dataset.f = 'ds'; vr.className = 'num ' + claseDinero(real); vr.textContent = dinero(real, true);
@@ -2493,8 +2520,8 @@ fT.addEventListener('click', e => {
       it.s = Number(b.dataset.s);
       $$('[data-s]', card).forEach(x => x.setAttribute('aria-pressed', x === b));
       const inp = $('[data-monto]', card);
-      inp.disabled = it.s === 0; if (it.s === 0) { it.monto = ''; inp.value = ''; }
-      inp.placeholder = it.s === -1 ? '¿Cuánto perdiste en $?' : it.s === 0 ? 'BE: $0' : '¿Cuánto ganaste en $?';
+      if (it.s === 0) { it.monto = ''; inp.value = ''; }
+      inp.placeholder = textoMonto(it.s);
       pop(b); vibrar(it.s < 0 ? 30 : 10);
       if (it.s > 0) chispas(b, [VERDE, '#b6f5d6'], 14);
       if (it.s < 0) { card.classList.remove('temblor'); void card.offsetWidth; card.classList.add('temblor'); }
@@ -2532,6 +2559,7 @@ fT.addEventListener('submit', e => {
       const card = cards[i], quien = edit.items.length > 1 ? `el trade ${i + 1}` : 'tu trade';
       if (it.s === null) { toast(`¿${mayus(quien)} fue ganado, perdido o BE?`); card.classList.remove('temblor'); void card.offsetWidth; card.classList.add('temblor'); return; }
       if (it.s !== 0 && it.monto === '') { toast(`Escribe cuánto ${it.s > 0 ? 'ganaste' : 'perdiste'} en ${quien}`); $('[data-monto]', card).focus(); return; }
+      if (it.s === 0 && valorItem(it) > BE_MAX) { toast(`Un BE llega hasta $${BE_MAX}. Si ganaste más, márcalo como Ganado`); $('[data-monto]', card).focus(); return; }
     }
     irPaso(2); return;
   }
@@ -2771,7 +2799,7 @@ async function tarjeta() {
   txt('¿Cuánto te cuesta a ti', 1620, '800 50px \"Bricolage Grotesque\"', '#f2f7ff');
   txt('romper tus reglas?', 1690, '800 50px \"Bricolage Grotesque\"', '#4da3ff', 'rgba(47,123,255,.8)');
   txt('Calcúlalo gratis · ' + (location.host || 'Sangre Fría'), 1770, '600 34px "Bricolage Grotesque"', '#b9dcff');
-  txt('by MJ Trades', 1860, '700 30px \"Bricolage Grotesque\"', '#7f8db0');
+  txt('by MJ_benzz', 1860, '700 30px \"Bricolage Grotesque\"', '#7f8db0');
 
   cv.toBlob(async blob => {
     const nombre = `sangre-fria-${hoyISO()}.png`;
