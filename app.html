@@ -1457,6 +1457,33 @@
   .cert-chk input:checked + span { text-decoration: none !important; opacity: 1 !important; color: var(--blanco) !important; }
   .rk-dos .rk-p { grid-template-columns: minmax(0, 1fr) auto; }
   @media (max-width: 1180px) { .rk-dos .rk-p { grid-template-columns: 1fr; } .rk-dos .rk-gana, .rk-dos .rk-stats div { text-align: left; } .rk-dos .rk-stats { justify-content: flex-start; } }
+
+  /* ---------- Ventanas en el celular: pantalla completa, sin cortes, con botón Atrás ---------- */
+  .grid > *, .pila > * { min-width: 0; }
+  .pila { grid-template-columns: minmax(0, 1fr); }
+  .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hoja input, .hoja select, .hoja textarea { min-width: 0; max-width: 100%; }
+  .hoja { max-height: calc(100dvh - 32px); }
+  .atras-hoja { display: none; align-items: center; gap: 4px; padding: 8px 12px 8px 8px; margin-right: 10px; border: 0; border-radius: 99px;
+    background: rgba(var(--ac), .14); color: var(--blanco); font-weight: 700; font-size: 15px; }
+  .atras-hoja svg { width: 20px; height: 20px; }
+  @media (max-width: 760px) {
+    .g2, .tres { grid-template-columns: minmax(0, 1fr); }
+    .modal:not(#m-cofre) { padding: 0; align-items: stretch; }
+    .modal:not(#m-cofre) > .hoja { max-width: none !important; width: 100%; height: 100dvh; max-height: none; border-radius: 0;
+      padding: 0 16px calc(env(safe-area-inset-bottom) + 24px); animation: hojaSube .3s cubic-bezier(.2,.9,.3,1); }
+    .modal:not(#m-cofre) > .hoja > .hoja-cab, .modal:not(#m-cofre) > .hoja > .dia-cab, .modal:not(#m-cofre) .hoja-cab {
+      position: sticky; top: 0; z-index: 6; margin: 0 -16px 12px; padding: calc(env(safe-area-inset-top) + 10px) 16px 10px;
+      background: var(--panel); box-shadow: 0 1px 0 rgba(var(--ac), .14); justify-content: flex-start; }
+    .modal:not(#m-cofre) .hoja-cab h2 { flex: 1; min-width: 0; font-size: 17px; }
+    .modal:not(#m-cofre) .hoja-cab .cerrar { display: none; }
+    .modal:not(#m-cofre) .atras-hoja { display: inline-flex; }
+    .par > button { min-width: 0; padding: 10px 12px; gap: 5px; font-size: 15px; }
+    .par > button + button { padding-left: 20px; }
+    .tr { padding: 12px 10px 12px 14px; }
+  }
+  @keyframes hojaSube { from { transform: translateX(28px); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .modal > .hoja { animation: none !important; } }
 </style>
 </head>
 <body>
@@ -1671,7 +1698,7 @@
         <div id="cert-cuerpo"></div>
       </section>
 
-      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.<br><small style="opacity:.6">Versión 7.0</small></footer>
+      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.<br><small style="opacity:.6">Versión 7.1</small></footer>
     </main>
   </div>
 </div>
@@ -2940,6 +2967,39 @@ function cerrarModales() {
 }
 document.addEventListener('click', e => { if (e.target.matches('[data-cerrar]') || e.target.classList.contains('modal')) cerrarModales(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModales(); });
+/* ---------- Botón Atrás en las ventanas y gesto de "atrás" del celular ----------
+   En el celular cada ventana ocupa toda la pantalla y arriba a la izquierda tiene "Atrás".
+   En Anotar trade, Atrás regresa al paso anterior; en el paso 1 cierra. El gesto o botón
+   de atrás del teléfono hace lo mismo (sin salirse de la app). */
+const ATRAS_HTML = '<button type="button" class="atras-hoja" data-atras aria-label="Atrás"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Atrás</button>';
+function ponerAtras(raiz = document) {
+  $$('.modal:not(#m-cofre) .hoja-cab', raiz).forEach(c => { if (!c.querySelector('[data-atras]')) c.insertAdjacentHTML('afterbegin', ATRAS_HTML); });
+}
+ponerAtras();
+new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => n.nodeType === 1 && ponerAtras(n.closest?.('.modal') || n))))
+  .observe(document.body, { childList: true, subtree: true });
+function atrasModal() {
+  const tradeAbierto = !$('#m-trade').hidden;
+  if (tradeAbierto && edit && edit.paso > 1) { irPaso(edit.paso - 1); return false; }
+  cerrarModales(); return true;
+}
+document.addEventListener('click', e => { if (e.target.closest('[data-atras]')) { e.preventDefault(); atrasModal(); } });
+// Historial del navegador: abrir una ventana suma un paso; "atrás" del teléfono la cierra
+let ventanaEnHistoria = false;
+const hayVentana = () => $$('.modal').some(m => !m.hidden);
+new MutationObserver(() => {
+  const abierta = hayVentana();
+  if (abierta && !ventanaEnHistoria) { history.pushState({ sfVentana: 1 }, ''); ventanaEnHistoria = true; }
+  else if (!abierta && ventanaEnHistoria) { ventanaEnHistoria = false; history.back(); }
+}).observe(document.body, { attributes: true, attributeFilter: ['hidden'], subtree: true });
+addEventListener('popstate', () => {
+  if (!ventanaEnHistoria) return;
+  ventanaEnHistoria = false;
+  const cerro = atrasModal();
+  // Si solo regresó de paso, la ventana sigue abierta: vuelve a guardar su lugar en el historial
+  if (!cerro && hayVentana()) { history.pushState({ sfVentana: 1 }, ''); ventanaEnHistoria = true; }
+});
+
 
 /* ---------- Ranking del mes ----------
    Solo sale quien lo activa. Cuentan los trades del mes hechos con reglas.
