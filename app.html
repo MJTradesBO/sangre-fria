@@ -1008,6 +1008,26 @@
   .rk-vacio { padding: 26px 14px; text-align: center; color: var(--mut); }
   .rk-dc { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 
+  /* ---------- Transición entre secciones ---------- */
+  .vista-sale { position: fixed; top: 0; bottom: 0; z-index: 5; overflow: hidden; pointer-events: none; contain: layout paint; }
+  .vista-sale * { animation: none !important; transition: none !important; }
+  .menu { position: relative; }
+  .menu button { transition: color .2s, background-color .25s; }
+  .menu button[aria-current="true"] { box-shadow: none; }
+  .menu-luz { position: absolute; left: 0; top: 0; width: 4px; border-radius: 2px; background: var(--neon2); opacity: 0; pointer-events: none; transition: transform .34s cubic-bezier(.2,.9,.25,1), height .34s, opacity .2s; }
+  .tab-luz { display: none; }
+  @media (max-width: 900px) {
+    .tab-luz { display: block; position: absolute; top: 0; left: 0; width: 26px; height: 3px; border-radius: 0 0 3px 3px; background: var(--neon2); opacity: 0; pointer-events: none; transition: transform .34s cubic-bezier(.2,.9,.25,1), opacity .2s; }
+    .tab-movil button { transition: color .2s; }
+    .tab-movil button[aria-current="true"] svg { animation: tab-salto .36s cubic-bezier(.3,1.5,.5,1); }
+  }
+  @keyframes tab-salto { 0% { transform: translateY(3px) scale(.88); } 100% { transform: none; } }
+  .luz-quieta { transition: none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    .menu-luz, .tab-luz { transition: none; }
+    .tab-movil button[aria-current="true"] svg { animation: none; }
+  }
+
   /* ---------- Instalar la app ---------- */
   .instalar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
   .instalar p { margin: 2px 0 0; color: var(--mut); font-size: 13.5px; }
@@ -1834,13 +1854,67 @@ function simularFondeo(lista, campo, aj) {
 }
 
 /* ---------- Navegación ---------- */
+/* Transición entre secciones, como en las apps móviles: la pantalla se mueve hacia el lado
+   de la pestaña elegida y se cruza con la anterior. Solo usa transform y opacity (no traba el
+   fondo) y no retrasa nada: la sección nueva ya está lista desde el primer momento. */
+const ORDEN_VISTAS = ['portada', 'panel', 'historial', 'ranking', 'pase', 'ajustes'];
+let salidaVista = null, entradaVista = null;
+function fotoSalida(seccion, dir) {
+  salidaVista?.remove(); salidaVista = null;
+  const r = seccion.getBoundingClientRect(), caja = document.createElement('div');
+  const copia = seccion.cloneNode(true);
+  copia.removeAttribute('id');
+  $$('[id]', copia).forEach(e => e.removeAttribute('id'));
+  $$('canvas, video', copia).forEach(e => { e.style.visibility = 'hidden'; });
+  copia.style.marginTop = r.top + 'px';
+  caja.className = 'vista-sale';
+  caja.setAttribute('aria-hidden', 'true');
+  caja.inert = true;
+  caja.style.left = r.left + 'px'; caja.style.width = r.width + 'px';
+  caja.appendChild(copia); document.body.appendChild(caja);
+  salidaVista = caja;
+  const an = caja.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translate3d(${-dir * 22}px,0,0)` }],
+    { duration: 110, easing: 'cubic-bezier(.2,0,.6,1)', fill: 'forwards' });
+  const fin = () => { caja.remove(); if (salidaVista === caja) salidaVista = null; };
+  an.onfinish = fin; an.oncancel = fin;
+}
+function entrarVista(seccion, dir) {
+  entradaVista?.cancel();
+  entradaVista = seccion.animate([{ opacity: 0, transform: `translate3d(${dir * 30}px,0,0)` }, { opacity: 1, transform: 'none' }],
+    { duration: 280, delay: 90, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+}
+// Indicador que se desliza hasta el botón activo de la barra lateral y de la barra del celular
+function moverLuces(sinAnimar) {
+  const poner = (luz, activo, valor) => {
+    if (!luz) return;
+    luz.classList.toggle('luz-quieta', !!sinAnimar || luz.style.opacity !== '1');
+    if (activo) { valor(luz, activo); luz.style.opacity = '1'; } else luz.style.opacity = '0';
+    if (luz.classList.contains('luz-quieta')) { void luz.offsetWidth; luz.classList.remove('luz-quieta'); }
+  };
+  poner($('.menu-luz'), $('#menu button[aria-current="true"]'), (l, b) => {
+    l.style.height = b.offsetHeight + 'px'; l.style.transform = `translate3d(0,${b.offsetTop}px,0)`;
+  });
+  poner($('.tab-luz'), $('#tab-movil button[aria-current="true"]'), (l, b) => {
+    l.style.transform = `translate3d(${b.offsetLeft + (b.offsetWidth - l.offsetWidth) / 2}px,0,0)`;
+  });
+}
+$('#menu').insertAdjacentHTML('afterbegin', '<i class="menu-luz" aria-hidden="true"></i>');
+$('#tab-movil').insertAdjacentHTML('afterbegin', '<i class="tab-luz" aria-hidden="true"></i>');
+window.addEventListener('resize', () => moverLuces(true));
+document.fonts?.ready.then(() => moverLuces(true));
+
 function ir(v) {
   if (v !== 'portada' && v !== 'ajustes' && !datos.ajustes) v = 'portada';
+  const antes = $('#v-' + vista), hayCambio = v !== vista && antes && !antes.hidden && !SIN_MOV;
+  const dir = ORDEN_VISTAS.indexOf(v) >= ORDEN_VISTAS.indexOf(vista) ? 1 : -1;
+  if (hayCambio) fotoSalida(antes, dir);
   vista = v;
   for (const s of ['portada', 'panel', 'historial', 'ranking', 'pase', 'ajustes']) $('#v-' + s).hidden = s !== v;
   $('#tab-movil').hidden = !datos.ajustes;
   $('#menu').style.visibility = datos.ajustes ? '' : 'hidden';
   $$('[data-ir]').forEach(b => b.matches('button') && b.setAttribute('aria-current', b.dataset.ir === v));
+  moverLuces();
+  if (hayCambio) entrarVista($('#v-' + v), dir);
   if (v === 'panel') pintarPanel();
   if (v === 'historial') pintarHistorial();
   if (v === 'ranking') pintarRanking();
