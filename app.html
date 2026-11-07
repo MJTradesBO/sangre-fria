@@ -18,7 +18,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Anton&family=Press+Start+2P&family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
 <style>
   /* Paleta sacada del logo MJ: noche, azul neón, hielo y blanco cromado.
      Verde y rojo solo para dinero y errores. */
@@ -1264,17 +1264,17 @@
   .logo img, .sello img, .logo-p img, .marca img { filter: var(--logo-f); transition: filter .45s ease; }
   /* Las fotos de fondo toman el color del tema */
   .tema-velo::before { content: ""; position: absolute; inset: 0; background: var(--neon); mix-blend-mode: color; opacity: 0; transition: opacity .45s, background-color .45s; }
-  body:is([data-fondo="wallst"], [data-fondo="manhattan"], [data-fondo="nyse"], [data-fondo="tickers"], [data-fondo="terminal"], [data-fondo="holograma"], [data-fondo="tormenta"], [data-fondo="cyber"], [data-fondo="marmol"], [data-fondo="cosmos"], [data-fondo="grafica"]) .tema-velo::before { opacity: .55; }
-  body[data-fondo="piso1963"] .tema-velo::before { opacity: .35; }
-  .tema-velo::after { content: ""; position: absolute; inset: 0; background: radial-gradient(70% 55% at 20% 0%, rgba(var(--ac), .16), transparent 70%); }
+  body:is([data-fondo="wallst"], [data-fondo="manhattan"], [data-fondo="nyse"], [data-fondo="tickers"], [data-fondo="terminal"], [data-fondo="holograma"], [data-fondo="tormenta"], [data-fondo="cyber"], [data-fondo="marmol"], [data-fondo="cosmos"], [data-fondo="grafica"]) .tema-velo::before { opacity: .28; }
+  body[data-fondo="piso1963"] .tema-velo::before { opacity: .18; }
+  .tema-velo::after { content: ""; position: absolute; inset: 0; background: radial-gradient(70% 55% at 20% 0%, rgba(var(--ac), .09), transparent 70%); }
   .chico-txt { font-size: 13px; }
   .sec-tit { font-size: 20px; margin: 28px 0 14px; }
   .enlace { background: none; border: 0; padding: 0; color: var(--neon2); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 
   /* ---------- Panel ---------- */
   .hola { position: relative; display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; flex-wrap: wrap; margin-bottom: 22px; padding: 26px 28px;
-    border-radius: var(--r); overflow: hidden; background: linear-gradient(120deg, rgba(var(--ac), .28), rgba(var(--ac), .06) 55%, transparent), var(--panel); }
-  .hola::after { content: ""; position: absolute; right: -60px; top: -80px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--ac2), .35), transparent 70%); pointer-events: none; }
+    border-radius: var(--r); overflow: hidden; background: linear-gradient(120deg, rgba(var(--ac), .17), rgba(var(--ac), .04) 55%, transparent), var(--panel); }
+  .hola::after { content: ""; position: absolute; right: -60px; top: -80px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--ac2), .2), transparent 70%); pointer-events: none; }
   .hola-txt { position: relative; z-index: 1; }
   .hola-fecha { font-size: 13px; font-weight: 700; color: var(--neon2); letter-spacing: .04em; }
   .hola h1 { font-size: clamp(30px, 4.6vw, 52px); font-weight: 800; letter-spacing: -.045em; line-height: 1.02; margin: 4px 0 8px; }
@@ -1484,6 +1484,34 @@
   }
   @keyframes hojaSube { from { transform: translateX(28px); opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .modal > .hoja { animation: none !important; } }
+
+  /* ---------- Tipos de certificado ---------- */
+  .cert-tipos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .cert-tipo { display: grid; gap: 6px; padding: 8px; border: 1px solid transparent; border-radius: var(--r); background: var(--panel); color: inherit; text-align: left; transition: transform .2s, border-color .2s; }
+  .cert-tipo:hover { transform: translateY(-2px); }
+  .cert-tipo[aria-pressed="true"] { border-color: var(--neon2); box-shadow: 0 0 0 1px var(--neon2); }
+  .cert-tipo canvas { width: 100%; height: auto; border-radius: 4px; }
+  .cert-tipo b { font-size: 13px; }
+  .cert-fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; margin-top: 6px; }
+  .cert-fotos button { position: relative; aspect-ratio: 1.4; padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; background: rgba(var(--ac), .12); color: var(--blanco); }
+  .cert-fotos button[aria-pressed="true"] { border-color: var(--neon2); }
+  .cert-fotos img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cert-fotos span { position: absolute; inset: auto 0 0 0; padding: 2px 4px; font-size: 10px; font-weight: 700; background: rgba(0,0,0,.6); color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cert-fotos .subir b { display: grid; place-items: center; height: 100%; font-size: 26px; }
+  .cert-sujetos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .cert-sujetos button { width: 48px; height: 48px; padding: 0; border: 2px solid transparent; border-radius: 10px; overflow: hidden; background: var(--panel); }
+  .cert-sujetos button[aria-pressed="true"] { border-color: var(--neon2); }
+  .cert-sujetos img { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 760px) { .cert-tipos { grid-template-columns: repeat(2, 1fr); } }
+  .cert-zona { grid-template-areas: "vista opc" "tipos opc"; }
+  .cert-vista { grid-area: vista; } .cert-opc { grid-area: opc; position: sticky; top: 16px; } .cert-tipos-caja { grid-area: tipos; min-width: 0; }
+  .cert-tipos-caja .sec-tit { margin-top: 8px; } .sec-tit small { font-size: 14px; font-weight: 600; }
+  @media (max-width: 1000px) {
+    .cert-zona { grid-template-areas: "vista" "tipos" "opc"; }
+    .cert-opc { position: static; }
+    .cert-tipos { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; }
+    .cert-tipo { flex: 0 0 138px; scroll-snap-align: start; }
+  }
 </style>
 </head>
 <body>
@@ -1698,7 +1726,7 @@
         <div id="cert-cuerpo"></div>
       </section>
 
-      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.<br><small style="opacity:.6">Versión 7.1</small></footer>
+      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.<br><small style="opacity:.6">Versión 7.2</small></footer>
     </main>
   </div>
 </div>
@@ -3165,7 +3193,7 @@ function statsSemana(lunes) {
   const titulo = disc === 100 && real > 0 ? 'Semana perfecta' : disc === 100 ? 'Disciplina perfecta' : real > 0 ? 'Semana en verde' : disc >= 70 ? 'Semana de disciplina' : 'Semana de aprendizaje';
   const frase = disc === 100 && real > 0 ? 'Ganó siguiendo su plan en cada trade.' : disc === 100 ? 'Siguió su plan en cada uno de sus trades.'
     : real > 0 ? `Cerró la semana en verde con ${disc}% de disciplina.` : 'Cada semana cuenta. La disciplina se entrena.';
-  return { lunes, real, n: l.length, limpios, disc, wr: winRate(l.map(x => x.t)), dias: porDia.size, diasLimpios, titulo, frase,
+  return { lunes, real, n: l.length, limpios, disc, wr: winRate(l.map(x => x.t)), gan: l.filter(x => esGanado(x.t)).length, per: l.filter(x => esPerdido(x.t)).length, be: l.filter(x => esBE(x.t)).length, dias: porDia.size, diasLimpios, titulo, frase,
     mejor: r2(Math.max(...l.map(x => x.real))), semana: numSemana(lunes), rango: rangoSemana(lunes) };
 }
 const semanasConTrades = () => [...new Set((datos.trades || []).map(t => lunesISO(deISO(t.fecha))))].sort().reverse();
@@ -3186,7 +3214,7 @@ function logoTenido(color, tam) {
 }
 LOGO_CERT.onload = () => { if (vista === 'certificados') redibujarCerts(); if (vista === 'panel') pintarMinis($('#panel-cuerpo')); };
 
-function dibujarCert(cv, sem, o) {
+function certBase(cv, sem, o) {
   const W = 1600, H = 1130, k = cv.width / W, c = cv.getContext('2d'), T = tc();
   const claro = !!T.claro, tx = claro ? '#15181d' : '#f4f6fb', mut = T.mut, ac = T.ac, ac2 = T.ac2, acR = T.acRgb;
   const F = '"Bricolage Grotesque", system-ui, sans-serif', SERIF = 'Georgia, "Times New Roman", serif';
@@ -3237,8 +3265,8 @@ function dibujarCert(cv, sem, o) {
   if (lg) c.drawImage(lg, xi, 100, 74, 74);
   txt('SANGRE FRÍA', xi + 92, 135, `800 30px ${F}`, tx, 'left');
   txt('by MJ_benzz', xi + 92, 166, `600 22px ${F}`, mut, 'left');
-  txt(`SEMANA ${sem.semana}`, W - 120, 135, `800 30px ${F}`, neon ? ac2 : tx, 'right');
-  txt(sem.rango.toUpperCase(), W - 120, 166, `600 22px ${F}`, mut, 'right');
+  txt(sem.rango.toUpperCase(), W - 120, 135, `800 30px ${F}`, neon ? ac2 : tx, 'right');
+  txt('SEMANA DE TRADING', W - 120, 166, `600 22px ${F}`, mut, 'right');
 
   // Cuerpo
   const al = mini ? 'left' : 'center', xc = mini ? 110 : W / 2;
@@ -3298,7 +3326,356 @@ function pintarMinis(raiz) {
   });
 }
 
+/* ---------- Tipos de certificado ----------
+   Además del clásico, neón y minimal: diploma, cheque, con foto de fondo, meme, a la luna, periódico,
+   ticket, carta coleccionable, trofeo, arcade y terminal. Todos toman el nombre, la semana y las cifras. */
+const ESTILOS_CERT = [['clasico', 'Clásico'], ['neon', 'Neón'], ['minimal', 'Minimal'], ['diploma', 'Diploma'], ['cheque', 'Cheque'],
+  ['foto', 'Con foto'], ['meme', 'Meme'], ['luna', 'A la luna'], ['periodico', 'Periódico'], ['recibo', 'Ticket'],
+  ['carta', 'Carta coleccionable'], ['trofeo', 'Trofeo'], ['arcade', 'Arcade'], ['terminal', 'Terminal']];
+const FOTOS_CERT = [['yate', 'img/lujo/yate.webp', 'Yate'], ['jet', 'img/lujo/jet.webp', 'Jet privado'], ['miami', 'img/lujo/miami.webp', 'Miami'],
+  ['penthouse', 'img/lujo/penthouse.webp', 'Penthouse'], ['superauto', 'img/lujo/superauto.webp', 'Superauto'], ['wallst', 'img/lujo/toro-lluvia.webp', 'Wall Street'],
+  ['cima', 'img/lujo/cima.webp', 'La cima'], ['boveda', 'img/lujo/boveda.webp', 'Bóveda'], ['lluvia', 'img/lujo/lluvia-dinero.webp', 'Lluvia de dinero'],
+  ['rey', 'img/lujo/rey.webp', 'Rey'], ['whisky', 'img/lujo/whisky.webp', 'Whisky'], ['monaco', 'img/juego/bn-monaco.webp', 'Mónaco'],
+  ['dubai', 'img/juego/bn-dubai.webp', 'Dubái'], ['tokio', 'img/juego/bn-tokio.webp', 'Tokio'], ['espacio', 'img/juego/bn-espacio.webp', 'El espacio'],
+  ['isla', 'img/juego/bn-isla.webp', 'Isla privada'], ['garaje', 'img/juego/bn-garaje.webp', 'Garaje']];
+const SUJETOS_MEME = ['toro', 'lobo', 'gorila', 'astronauta', 'samurai', 'rey', 'tiburon', 'leon', 'buho', 'vikingo', 'espartano', 'cohete', 'diamante', 'llama', 'oso', 'superauto'];
+const FRASES_MEME = [['Cuando sigues tus reglas', 'y la cuenta sube'], ['Yo esta semana', 'sin FOMO ni venganza'], ['Nadie:', 'Yo respetando mi stop'],
+  ['El mercado tentándome', 'Yo: hoy no'], ['Disciplina', 'nivel: leyenda'], ['Mi stop loss', 'es sagrado'], ['Tradear con reglas', 'ahora es mi personalidad'],
+  ['Otros: revenge trading', 'Yo: cierro y me voy'], ['Me dijeron que no se podía', 'semana con reglas'], ['Plan de trading', 'respetado. Sin excusas']];
+const FOTO_PROPIA_K = 'sf-cert-foto';
+let fotoPropia = null; try { fotoPropia = localStorage.getItem(FOTO_PROPIA_K); } catch {}
+
+const IMGS = new Map(); let timerRedibujo = null;
+function img(src) {
+  if (!src) return null;
+  let i = IMGS.get(src);
+  if (!i) { i = new Image(); i.onload = programarRedibujo; i.src = src; IMGS.set(src, i); }
+  return i.complete && i.naturalWidth ? i : null;
+}
+function programarRedibujo() {
+  clearTimeout(timerRedibujo);
+  timerRedibujo = setTimeout(() => { if (vista === 'certificados') redibujarCerts(true); if (vista === 'panel') pintarMinis($('#panel-cuerpo')); }, 60);
+}
+function cubrir(c, im, x, y, w, h) {
+  const r = Math.max(w / im.naturalWidth, h / im.naturalHeight), sw = w / r, sh = h / r;
+  c.drawImage(im, (im.naturalWidth - sw) / 2, (im.naturalHeight - sh) / 2, sw, sh, x, y, w, h);
+}
+function avatarSrc() {
+  const p = perfil(), id = p.avatar, a = PREMIOS[id];
+  if (id === 'subir' && p.foto) return p.foto;
+  if (a?.foto) return a.foto;
+  if (AV3D.has(id) || a?.av3d) return `img/juego/av-${id}.webp`;
+  return 'img/juego/av-toro.webp';
+}
+const certNombre = o => (o.nombre || datos.ajustes?.nombre || 'Trader').trim();
+const certFrase = (o, sem) => (o.frase || sem.frase).trim();
+const certTier = sem => sem.disc >= 90 ? 'diamante' : sem.disc >= 75 ? 'oro' : sem.disc >= 50 ? 'plata' : 'bronce';
+const TIER = { diamante: ['Diamante', '#9fe8ff', '#4bb8ff'], oro: ['Oro', '#ffe08a', '#d79a1c'], plata: ['Plata', '#eef2f8', '#9aa6b8'], bronce: ['Bronce', '#f2b98a', '#a8642e'] };
+function certCifras(sem, o) {
+  return [o.dinero ? ['Resultado', dinero(sem.real, true), sem.real > 0 ? '#2ee08a' : sem.real < 0 ? '#ff4d5e' : null] : ['Días limpios', `${sem.diasLimpios}/${sem.dias}`, null],
+    ['Win rate', sem.wr == null ? '—' : sem.wr + '%', null], ['Disciplina', sem.disc + '%', null], ['Trades', String(sem.n), null]];
+}
+// Texto con contorno (memes) y texto que se parte en varias líneas
+function lineas(c, t, max) {
+  const out = []; let l = '';
+  for (const p of t.split(/\s+/)) { const prueba = l ? l + ' ' + p : p; if (c.measureText(prueba).width > max && l) { out.push(l); l = p; } else l = prueba; }
+  if (l) out.push(l); return out;
+}
+function textoMeme(c, t, x, y, tam, max, abajo) {
+  c.font = `400 ${tam}px Anton, Impact, "Arial Black", sans-serif`; c.textAlign = 'center';
+  let ls = lineas(c, t.toUpperCase(), max);
+  while (ls.length > 2 && tam > 60) { tam -= 8; c.font = `400 ${tam}px Anton, Impact, "Arial Black", sans-serif`; ls = lineas(c, t.toUpperCase(), max); }
+  c.textBaseline = abajo ? 'bottom' : 'top'; c.lineJoin = 'round'; c.lineWidth = tam * .14; c.strokeStyle = '#000'; c.fillStyle = '#fff';
+  (abajo ? ls.slice().reverse() : ls).forEach((l, i) => { const yy = abajo ? y - i * tam * 1.05 : y + i * tam * 1.05; c.strokeText(l, x, yy); c.fillText(l, x, yy); });
+  c.textBaseline = 'alphabetic';
+}
+function gris(c, x, y, w, h) { c.save(); c.globalCompositeOperation = 'saturation'; c.fillStyle = '#808080'; c.fillRect(x, y, w, h); c.restore(); }
+
+function dibujarCert(cv, sem, o) {
+  const tipo = DIBUJOS_CERT[o.estilo];
+  if (!tipo) { certBase(cv, sem, o); return; }
+  const W = 1600, H = 1130, k = cv.width / W, c = cv.getContext('2d'), T = tc();
+  c.setTransform(k, 0, 0, k, 0, 0); c.clearRect(0, 0, W, H);
+  c.save(); c.textBaseline = 'alphabetic'; c.shadowBlur = 0; c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
+  const F = '"Bricolage Grotesque", system-ui, sans-serif', SERIF = '"Playfair Display", Georgia, serif', MONO = '"Courier New", ui-monospace, monospace';
+  const txt = (t, x, y, font, col, al = 'center', brillo) => {
+    c.font = font; c.fillStyle = col; c.textAlign = al;
+    if (brillo) { c.shadowColor = brillo; c.shadowBlur = 26; }
+    c.fillText(t, x, y); c.shadowBlur = 0;
+  };
+  const ajustar = (t, max, peso, tam, fam) => { let s = tam; do { c.font = `${peso} ${s}px ${fam}`; s -= 3; } while (c.measureText(t).width > max && s > 24); return c.font; };
+  tipo({ c, W, H, T, sem, o, F, SERIF, MONO, txt, ajustar, nombre: certNombre(o), frase: certFrase(o, sem), cifras: certCifras(sem, o) });
+  c.restore();
+}
+
+const DIBUJOS_CERT = {
+  diploma({ c, W, H, sem, txt, ajustar, nombre, frase, cifras, SERIF, F }) {
+    c.fillStyle = '#f3ead3'; c.fillRect(0, 0, W, H);
+    const v = c.createRadialGradient(W / 2, H / 2, 300, W / 2, H / 2, 950); v.addColorStop(0, 'rgba(255,250,235,0)'); v.addColorStop(1, 'rgba(120,85,30,.28)');
+    c.fillStyle = v; c.fillRect(0, 0, W, H);
+    c.strokeStyle = '#7b5a2a'; c.lineWidth = 6; c.strokeRect(46, 46, W - 92, H - 92); c.lineWidth = 2; c.strokeRect(64, 64, W - 128, H - 128);
+    c.fillStyle = '#7b5a2a';
+    for (const [x, y] of [[64, 64], [W - 64, 64], [64, H - 64], [W - 64, H - 64]]) { c.beginPath(); c.arc(x, y, 16, 0, Math.PI * 2); c.fill(); }
+    const lg = logoTenido('#7b5a2a', 160); if (lg) c.drawImage(lg, W / 2 - 45, 104, 90, 90);
+    txt('SANGRE FRÍA · ' + sem.rango.toUpperCase(), W / 2, 238, `700 22px ${F}`, '#8a6a3a');
+    txt('Diploma de Disciplina', W / 2, 340, `italic 700 86px ${SERIF}`, '#3b2a12');
+    txt('se otorga con orgullo a', W / 2, 410, `italic 400 32px ${SERIF}`, '#6b5333');
+    txt(nombre, W / 2, 530, ajustar(nombre, 1150, 700, 118, SERIF), '#1d140a');
+    c.fillStyle = '#7b5a2a'; c.fillRect(W / 2 - 380, 566, 760, 2);
+    txt(`por: ${sem.titulo.toLowerCase()}. ${frase}`, W / 2, 630, ajustar(`por: ${sem.titulo.toLowerCase()}. ${frase}`, 1180, 500, 32, SERIF), '#4a3820');
+    txt(cifras.map(([e, v]) => `${e}: ${v}`).join('   ·   '), W / 2, 712, ajustar(cifras.map(([e, v]) => `${e}: ${v}`).join('   ·   '), 1250, 600, 30, F), '#5a4426');
+    // Sello de cera
+    const sx = 330, sy = 900;
+    c.fillStyle = '#9c1d24'; c.beginPath();
+    for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2, r = i % 2 ? 92 : 100; c.lineTo(sx + Math.cos(a) * r, sy + Math.sin(a) * r); } c.fill();
+    c.fillStyle = '#c2343c'; c.beginPath(); c.arc(sx, sy, 70, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = '#7d1218'; c.lineWidth = 3; c.beginPath(); c.arc(sx, sy, 58, 0, Math.PI * 2); c.stroke();
+    txt('SF', sx, sy + 20, `italic 700 56px ${SERIF}`, '#f6d9c8');
+    c.fillStyle = '#9c1d24'; c.beginPath(); c.moveTo(sx - 40, sy + 70); c.lineTo(sx - 70, sy + 170); c.lineTo(sx - 40, sy + 150); c.lineTo(sx - 15, sy + 175); c.lineTo(sx - 5, sy + 80); c.fill();
+    c.beginPath(); c.moveTo(sx + 40, sy + 70); c.lineTo(sx + 70, sy + 170); c.lineTo(sx + 40, sy + 150); c.lineTo(sx + 15, sy + 175); c.lineTo(sx + 5, sy + 80); c.fill();
+    txt('MJ_benzz', W - 330, 900, `italic 700 60px ${SERIF}`, '#2b1d0c');
+    c.fillStyle = '#7b5a2a'; c.fillRect(W - 520, 922, 380, 2);
+    txt('Fundador · Sangre Fría', W - 330, 962, `600 22px ${F}`, '#6b5333');
+  },
+
+  cheque({ c, W, H, T, sem, o, txt, ajustar, nombre, frase, F, MONO, SERIF }) {
+    c.fillStyle = T.noche; c.fillRect(0, 0, W, H);
+    const g = c.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, 900); g.addColorStop(0, `rgba(${T.acRgb},.25)`); g.addColorStop(1, `rgba(${T.acRgb},0)`);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    const x = 110, y = 200, w = W - 220, h = 640;
+    c.save(); c.shadowColor = 'rgba(0,0,0,.5)'; c.shadowBlur = 50; c.shadowOffsetY = 20;
+    c.fillStyle = '#eaf1e6'; c.beginPath(); c.roundRect(x, y, w, h, 18); c.fill(); c.restore();
+    c.save(); c.beginPath(); c.roundRect(x, y, w, h, 18); c.clip();
+    c.strokeStyle = 'rgba(40,110,80,.13)'; c.lineWidth = 2;
+    for (let j = 0; j < 26; j++) { c.beginPath(); for (let i = 0; i <= w; i += 10) c.lineTo(x + i, y + 30 + j * 24 + Math.sin(i / 38 + j) * 9); c.stroke(); }
+    c.fillStyle = T.ac; c.fillRect(x, y, w, 14); c.restore();
+    const lg = logoTenido('#1f5a43', 160); if (lg) c.drawImage(lg, x + 50, y + 54, 76, 76);
+    txt('BANCO DE LA DISCIPLINA', x + 145, y + 96, `800 34px ${F}`, '#1f3d30', 'left');
+    txt('Sangre Fría · by MJ_benzz', x + 145, y + 128, `600 20px ${F}`, '#4f6b5e', 'left');
+    txt('FECHA', x + w - 380, y + 96, `700 18px ${F}`, '#4f6b5e', 'left');
+    txt(sem.rango, x + w - 280, y + 96, `700 28px ${MONO}`, '#1f3d30', 'left');
+    c.fillStyle = '#9fb3a8'; c.fillRect(x + w - 290, y + 108, 240, 2);
+    txt('PÁGUESE A LA ORDEN DE', x + 50, y + 250, `700 20px ${F}`, '#4f6b5e', 'left');
+    txt(nombre, x + 50, y + 330, ajustar(nombre, w - 560, 700, 76, SERIF), '#10241b', 'left');
+    c.fillStyle = '#9fb3a8'; c.fillRect(x + 50, y + 350, w - 560, 2);
+    const monto = o.dinero ? dinero(sem.real, true) : sem.disc + '%';
+    c.strokeStyle = '#1f5a43'; c.lineWidth = 3; c.beginPath(); c.roundRect(x + w - 440, y + 248, 390, 110, 12); c.stroke();
+    txt(monto, x + w - 245, y + 328, ajustar(monto, 340, 800, 64, MONO), sem.real < 0 && o.dinero ? '#b3263a' : '#10241b');
+    txt(`LA CANTIDAD DE: ${sem.disc}% DE DISCIPLINA Y ${sem.n} ${sem.n === 1 ? 'TRADE' : 'TRADES'} ANOTADOS`, x + 50, y + 430, ajustar(`LA CANTIDAD DE: ${sem.disc}% DE DISCIPLINA Y ${sem.n} TRADES ANOTADOS`, w - 100, 700, 28, F), '#1f3d30', 'left');
+    c.fillStyle = '#9fb3a8'; c.fillRect(x + 50, y + 446, w - 100, 2);
+    txt('MEMO', x + 50, y + 530, `700 18px ${F}`, '#4f6b5e', 'left');
+    txt(frase, x + 130, y + 530, ajustar(frase, 640, 500, 26, F), '#1f3d30', 'left');
+    txt('MJ_benzz', x + w - 245, y + 528, `italic 700 54px ${SERIF}`, '#10241b');
+    c.fillStyle = '#1f3d30'; c.fillRect(x + w - 440, y + 548, 390, 2);
+    txt(`⑆${sem.lunes.replace(/-/g, '')}⑆  ${String(sem.n).padStart(4, '0')}  ${String(sem.disc).padStart(3, '0')}⑈`, x + 50, y + 610, `700 28px ${MONO}`, '#3a5247', 'left');
+    txt(sem.titulo.toUpperCase(), W / 2, H - 150, `800 46px ${F}`, T.claro ? T.ac : T.ac2);
+    txt('Certificado semanal · sangrefria.app', W / 2, H - 100, `600 24px ${F}`, T.mut);
+  },
+
+  foto({ c, W, H, T, sem, o, txt, ajustar, nombre, frase, cifras, F }) {
+    const f = FOTOS_CERT.find(x => x[0] === o.foto) || FOTOS_CERT[0];
+    const im = img(o.foto === 'propia' && fotoPropia ? fotoPropia : f[1]);
+    c.fillStyle = '#0a0a0a'; c.fillRect(0, 0, W, H);
+    if (im) cubrir(c, im, 0, 0, W, H);
+    const g = c.createLinearGradient(0, 0, W, 0); g.addColorStop(0, 'rgba(0,0,0,.86)'); g.addColorStop(.55, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,.05)');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    const g2 = c.createLinearGradient(0, H - 330, 0, H); g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,.75)');
+    c.fillStyle = g2; c.fillRect(0, H - 330, W, 330);
+    const lg = logoTenido(T.ac2, 160); if (lg) c.drawImage(lg, 100, 90, 70, 70);
+    txt('SANGRE FRÍA', 188, 125, `800 28px ${F}`, '#fff', 'left'); txt('by MJ_benzz', 188, 156, `600 20px ${F}`, 'rgba(255,255,255,.7)', 'left');
+    c.save(); c.letterSpacing = '6px'; txt('CERTIFICADO SEMANAL · ' + sem.rango.toUpperCase(), 100, 330, `700 22px ${F}`, 'rgba(255,255,255,.75)', 'left'); c.restore();
+    txt(sem.titulo, 100, 420, ajustar(sem.titulo, 900, 800, 76, F), T.ac2, 'left');
+    txt(nombre, 100, 540, ajustar(nombre, 950, 800, 120, F), '#fff', 'left', 'rgba(0,0,0,.6)');
+    c.fillStyle = T.ac; c.fillRect(100, 576, 160, 6);
+    txt(frase, 100, 640, ajustar(frase, 900, 500, 32, F), 'rgba(255,255,255,.88)', 'left');
+    cifras.forEach(([e, v, col], i) => {
+      const x = 100 + i * 250, y = 820;
+      c.fillStyle = 'rgba(255,255,255,.1)'; c.strokeStyle = 'rgba(255,255,255,.25)'; c.lineWidth = 1.5;
+      c.beginPath(); c.roundRect(x, y, 228, 150, 16); c.fill(); c.stroke();
+      txt(e.toUpperCase(), x + 24, y + 48, `700 18px ${F}`, 'rgba(255,255,255,.7)', 'left');
+      txt(v, x + 24, y + 116, `800 ${v.length > 8 ? 38 : 50}px ${F}`, col || '#fff', 'left');
+    });
+    txt('sangrefria.app', W - 100, H - 70, `700 24px ${F}`, 'rgba(255,255,255,.8)', 'right');
+  },
+
+  meme({ c, W, H, T, sem, o, txt, nombre, F }) {
+    const suj = SUJETOS_MEME.includes(o.sujeto) ? o.sujeto : SUJETOS_MEME[0];
+    const im = img(`img/juego/av-${suj}.webp`);
+    const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, T.ac); g.addColorStop(1, T.noche);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    for (let i = 0; i < 18; i++) { c.fillStyle = `rgba(255,255,255,${i % 2 ? .04 : .07})`; c.beginPath(); c.moveTo(W / 2, H / 2); c.arc(W / 2, H / 2, 1200, i / 18 * Math.PI * 2, (i + .5) / 18 * Math.PI * 2); c.fill(); }
+    if (im) { c.save(); c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = 50; c.beginPath(); c.roundRect(W / 2 - 330, H / 2 - 330, 660, 660, 40); c.clip(); cubrir(c, im, W / 2 - 330, H / 2 - 330, 660, 660); c.restore(); }
+    const fr = FRASES_MEME[o.meme] || FRASES_MEME[0];
+    textoMeme(c, (o.memeA ?? '').trim() || fr[0], W / 2, 40, 120, W - 140, false);
+    textoMeme(c, (o.memeB ?? '').trim() || fr[1], W / 2, H - 40, 120, W - 140, true);
+    c.fillStyle = 'rgba(0,0,0,.6)'; c.beginPath(); c.roundRect(40, H / 2 - 70, 310, 140, 16); c.fill();
+    txt(nombre, 195, H / 2 - 18, `800 30px ${F}`, '#fff'); txt(sem.rango, 195, H / 2 + 20, `600 20px ${F}`, 'rgba(255,255,255,.75)');
+    txt(`Disciplina ${sem.disc}%`, 195, H / 2 + 52, `800 22px ${F}`, '#2ee08a');
+    c.fillStyle = 'rgba(0,0,0,.6)'; c.beginPath(); c.roundRect(W - 350, H / 2 - 40, 310, 80, 16); c.fill();
+    txt('sangrefria.app', W - 195, H / 2 + 10, `700 26px ${F}`, '#fff');
+  },
+
+  luna({ c, W, H, T, sem, o, txt, ajustar, nombre, frase, cifras, F }) {
+    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#03041a'); g.addColorStop(1, '#1a1260');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    for (let i = 0; i < 160; i++) { const x = (i * 977) % W, y = (i * 571) % (H * .7); c.fillStyle = `rgba(255,255,255,${.25 + (i % 5) / 8})`; c.fillRect(x, y, i % 7 ? 2 : 4, i % 7 ? 2 : 4); }
+    c.fillStyle = '#e9e4d0'; c.beginPath(); c.arc(W - 230, 200, 110, 0, Math.PI * 2); c.fill();
+    c.fillStyle = 'rgba(0,0,0,.08)'; [[-30, -20, 22], [35, 30, 16], [10, 55, 10]].forEach(([dx, dy, r]) => { c.beginPath(); c.arc(W - 230 + dx, 200 + dy, r, 0, Math.PI * 2); c.fill(); });
+    c.strokeStyle = 'rgba(120,140,255,.25)'; c.lineWidth = 1;
+    for (let i = 0; i < 12; i++) { c.beginPath(); c.moveTo(0, H - 260 + i * 24); c.lineTo(W, H - 260 + i * 24); c.stroke(); }
+    const pts = [[80, 980], [260, 900], [380, 940], [560, 760], [700, 820], [900, 560], [1040, 620], [1300, 300]];
+    c.save(); c.shadowColor = T.ac2; c.shadowBlur = 40; c.strokeStyle = T.ac2; c.lineWidth = 22; c.lineJoin = 'round'; c.lineCap = 'round';
+    c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke();
+    c.fillStyle = T.ac2; c.beginPath(); c.moveTo(1370, 210); c.lineTo(1215, 280); c.lineTo(1340, 395); c.fill(); c.restore();
+    const im = img(avatarSrc()); if (im) { c.save(); c.beginPath(); c.arc(1180, 760, 150, 0, Math.PI * 2); c.clip(); cubrir(c, im, 1030, 610, 300, 300); c.restore(); c.strokeStyle = T.ac2; c.lineWidth = 8; c.beginPath(); c.arc(1180, 760, 150, 0, Math.PI * 2); c.stroke(); }
+    txt('DISCIPLINA', 90, 210, `400 150px Anton, Impact, sans-serif`, '#fff', 'left', T.ac);
+    txt('A LA LUNA', 96, 290, `400 64px Anton, Impact, sans-serif`, T.ac2, 'left');
+    txt(nombre, 96, 380, ajustar(nombre, 820, 800, 64, F), '#fff', 'left');
+    txt(sem.rango + ' · ' + frase, 96, 430, ajustar(sem.rango + ' · ' + frase, 860, 500, 26, F), 'rgba(255,255,255,.75)', 'left');
+    cifras.forEach(([e, v, col], i) => { txt(e.toUpperCase(), 96 + i * 205, 1010, `700 17px ${F}`, 'rgba(255,255,255,.6)', 'left'); txt(v, 96 + i * 205, 1060, `800 40px ${F}`, col || '#fff', 'left'); });
+    txt('sangrefria.app', W - 80, H - 50, `700 22px ${F}`, 'rgba(255,255,255,.7)', 'right');
+  },
+
+  periodico({ c, W, H, sem, txt, ajustar, nombre, frase, cifras, SERIF, F }) {
+    c.fillStyle = '#f1ede3'; c.fillRect(0, 0, W, H);
+    txt('El Diario del Trader', W / 2, 150, `900 104px ${SERIF}`, '#151310');
+    c.fillStyle = '#151310'; c.fillRect(80, 180, W - 160, 4); c.fillRect(80, 232, W - 160, 2);
+    txt(`EDICIÓN SEMANAL · ${sem.rango.toUpperCase()} · PRECIO: TU DISCIPLINA`, W / 2, 218, `700 20px ${F}`, '#151310');
+    const tit = `${nombre}: ${sem.titulo.toLowerCase()}`;
+    txt(tit, W / 2, 330, ajustar(tit, W - 180, 900, 84, SERIF), '#151310');
+    txt(frase, W / 2, 390, ajustar(frase, W - 260, 400, 34, `italic ${SERIF}`.replace('italic ', '')), '#3b3830');
+    c.fillStyle = '#151310'; c.fillRect(80, 420, W - 160, 2);
+    const im = img(avatarSrc());
+    c.fillStyle = '#d9d4c7'; c.fillRect(80, 450, 560, 480);
+    if (im) { cubrir(c, im, 80, 450, 560, 480); gris(c, 80, 450, 560, 480); }
+    txt('El trader de la semana, tras cerrar con sus reglas.', 80, 970, `italic 400 22px ${SERIF}`, '#3b3830', 'left');
+    c.fillStyle = '#b8b2a3';
+    for (let col = 0; col < 2; col++) for (let i = 0; i < 15; i++) { const x = 680 + col * 290, w = (i % 5 === 4) ? 150 : 260; c.fillRect(x, 470 + i * 32, w, 10); }
+    c.fillStyle = '#151310'; c.fillRect(1270, 450, 2, 520);
+    txt('EN CIFRAS', 1300, 490, `900 30px ${SERIF}`, '#151310', 'left');
+    cifras.forEach(([e, v, col], i) => { txt(e, 1300, 560 + i * 100, `700 20px ${F}`, '#5a564c', 'left'); txt(v, 1300, 605 + i * 100, `900 44px ${SERIF}`, col === '#ff4d5e' ? '#b3263a' : col === '#2ee08a' ? '#13734a' : '#151310', 'left'); });
+    c.fillStyle = '#151310'; c.fillRect(80, 1010, W - 160, 2);
+    txt('Sangre Fría · by MJ_benzz · sangrefria.app', W / 2, 1056, `700 22px ${F}`, '#151310');
+  },
+
+  recibo({ c, W, H, T, sem, o, txt, ajustar, nombre, MONO, F }) {
+    c.fillStyle = T.noche; c.fillRect(0, 0, W, H);
+    const g = c.createRadialGradient(1000, 500, 0, 1000, 500, 800); g.addColorStop(0, `rgba(${T.acRgb},.3)`); g.addColorStop(1, `rgba(${T.acRgb},0)`);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    txt('TU SEMANA,', 100, 420, `400 120px Anton, Impact, sans-serif`, T.claro ? T.ac : '#fff', 'left');
+    txt('EN TICKET', 100, 540, `400 120px Anton, Impact, sans-serif`, T.ac2, 'left');
+    txt(nombre, 104, 620, ajustar(nombre, 560, 800, 44, F), T.claro ? '#15181d' : '#fff', 'left');
+    txt(sem.titulo, 104, 668, `600 28px ${F}`, T.mut, 'left');
+    const x = 860, y = 60, w = 580, h = 1010;
+    c.save(); c.translate(x + w / 2, y + h / 2); c.rotate(-.03); c.translate(-(x + w / 2), -(y + h / 2));
+    c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = 40; c.fillStyle = '#fbfbf7';
+    c.beginPath(); c.moveTo(x, y); c.lineTo(x + w, y); c.lineTo(x + w, y + h);
+    for (let i = w; i >= 0; i -= 20) c.lineTo(x + i, y + h - (i / 20 % 2 ? 14 : 0)); c.closePath(); c.fill(); c.shadowBlur = 0;
+    const L = (t, yy, al = 'left', peso = 700, tam = 26) => txt(t, al === 'left' ? x + 40 : al === 'right' ? x + w - 40 : x + w / 2, yy, `${peso} ${tam}px ${MONO}`, '#1c1c1c', al);
+    const raya = yy => L('- '.repeat(22), yy, 'center', 400, 22);
+    L('SANGRE FRÍA', y + 80, 'center', 800, 40); L('by MJ_benzz', y + 116, 'center', 400, 22); raya(y + 156);
+    L('TICKET DE LA SEMANA', y + 200, 'center', 800, 26); L(sem.rango, y + 236, 'center', 400, 22); L('CLIENTE: ' + nombre.toUpperCase().slice(0, 18), y + 276, 'left', 700, 22); raya(y + 312);
+    const filas = [['TRADES', sem.n], ['GANADOS', sem.gan], ['PERDIDOS', sem.per], ['BE', sem.be], ['WIN RATE', sem.wr == null ? '—' : sem.wr + '%'], ['DISCIPLINA', sem.disc + '%'], ['DÍAS LIMPIOS', `${sem.diasLimpios}/${sem.dias}`]];
+    filas.forEach(([a, b], i) => { L(a, y + 360 + i * 46); L(String(b), y + 360 + i * 46, 'right'); });
+    raya(y + 700);
+    L('TOTAL', y + 752, 'left', 800, 34); L(o.dinero ? dinero(sem.real, true) : '******', y + 752, 'right', 800, 34); raya(y + 792);
+    L('GRACIAS POR SEGUIR', y + 840, 'center', 700, 22); L('TUS REGLAS :)', y + 872, 'center', 700, 22);
+    c.fillStyle = '#1c1c1c'; let bx = x + 80;
+    for (let i = 0; bx < x + w - 80; i++) { const bw = [3, 6, 2, 4, 8, 2][(i * 7 + sem.n) % 6]; c.fillRect(bx, y + 905, bw, 60); bx += bw + 4; }
+    c.restore();
+  },
+
+  carta({ c, W, H, T, sem, txt, ajustar, nombre, frase, cifras, F }) {
+    const t = certTier(sem), [tn, c1, c2] = TIER[t];
+    c.fillStyle = T.noche; c.fillRect(0, 0, W, H);
+    for (let i = 0; i < 24; i++) { c.fillStyle = `rgba(${T.acRgb},${i % 2 ? .05 : .1})`; c.beginPath(); c.moveTo(470, 565); c.arc(470, 565, 1400, i / 24 * Math.PI * 2, (i + .5) / 24 * Math.PI * 2); c.fill(); }
+    const x = 180, y = 70, w = 580, h = 990;
+    const gb = c.createLinearGradient(x, y, x + w, y + h); gb.addColorStop(0, c1); gb.addColorStop(.5, c2); gb.addColorStop(1, c1);
+    c.save(); c.shadowColor = c2; c.shadowBlur = 60; c.fillStyle = gb; c.beginPath(); c.roundRect(x, y, w, h, 34); c.fill(); c.restore();
+    c.fillStyle = '#10131c'; c.beginPath(); c.roundRect(x + 18, y + 18, w - 36, h - 36, 24); c.fill();
+    const im = img(avatarSrc());
+    c.save(); c.beginPath(); c.roundRect(x + 40, y + 110, w - 80, 470, 18); c.clip(); c.fillStyle = T.panel; c.fillRect(x + 40, y + 110, w - 80, 470); if (im) cubrir(c, im, x + 40, y + 110, w - 80, 470); c.restore();
+    txt(tn.toUpperCase(), x + 50, y + 80, `900 30px ${F}`, c1, 'left'); txt(`${sem.disc}`, x + w - 50, y + 84, `900 52px ${F}`, c1, 'right');
+    txt(nombre, x + w / 2, y + 650, ajustar(nombre, w - 90, 900, 54, F), '#fff');
+    txt(sem.titulo, x + w / 2, y + 694, `600 24px ${F}`, c1);
+    cifras.forEach(([e, v, col], i) => {
+      const cx = x + 50 + (i % 2) * 250, cy = y + 740 + Math.floor(i / 2) * 110;
+      c.fillStyle = 'rgba(255,255,255,.06)'; c.beginPath(); c.roundRect(cx, cy, 230, 96, 12); c.fill();
+      txt(e.toUpperCase(), cx + 18, cy + 34, `700 16px ${F}`, 'rgba(255,255,255,.6)', 'left'); txt(v, cx + 18, cy + 78, `900 36px ${F}`, col || '#fff', 'left');
+    });
+    const tx = T.claro ? '#15181d' : '#fff';
+    txt('CARTA DE LA SEMANA', 880, 380, `800 28px ${F}`, T.mut, 'left');
+    txt(`Rareza ${tn}`, 880, 480, `900 92px ${F}`, c1, 'left', c2);
+    txt(sem.rango, 884, 540, `600 30px ${F}`, tx, 'left');
+    lineas(c, frase, 600).slice(0, 3).forEach((l, i) => txt(l, 884, 620 + i * 44, `500 32px ${F}`, T.mut, 'left'));
+    txt('Diamante 90%+ · Oro 75%+ · Plata 50%+ de disciplina', 884, 820, `600 22px ${F}`, T.mut, 'left');
+    txt('sangrefria.app', 884, 1000, `700 26px ${F}`, tx, 'left');
+  },
+
+  trofeo({ c, W, H, T, sem, txt, ajustar, nombre, frase, cifras, F, SERIF }) {
+    const t = certTier(sem), [tn, c1, c2] = TIER[t];
+    c.fillStyle = '#050505'; c.fillRect(0, 0, W, H);
+    const f = c.createRadialGradient(470, 0, 0, 470, 500, 800); f.addColorStop(0, `rgba(255,255,255,.22)`); f.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = f; c.beginPath(); c.moveTo(380, 0); c.lineTo(560, 0); c.lineTo(860, 1000); c.lineTo(80, 1000); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.07)'; c.beginPath(); c.ellipse(470, 980, 330, 50, 0, 0, Math.PI * 2); c.fill();
+    const im = img(`img/juego/trofeo-${t}.webp`); if (im) { const s = 760; c.drawImage(im, 470 - s / 2, 990 - s * im.naturalHeight / im.naturalWidth, s, s * im.naturalHeight / im.naturalWidth); }
+    txt('TROFEO DE LA SEMANA', 920, 300, `800 26px ${F}`, '#9a9a9a', 'left');
+    txt(tn.toUpperCase(), 916, 420, `900 120px ${F}`, c1, 'left', c2);
+    txt(nombre, 920, 520, ajustar(nombre, 620, 700, 70, SERIF), '#fff', 'left');
+    txt(sem.titulo + ' · ' + sem.rango, 920, 570, ajustar(sem.titulo + ' · ' + sem.rango, 620, 600, 26, F), '#bdbdbd', 'left');
+    lineas(c, frase, 600).slice(0, 2).forEach((l, i) => txt(l, 920, 630 + i * 40, `500 28px ${F}`, '#9a9a9a', 'left'));
+    cifras.forEach(([e, v, col], i) => { const x = 920 + (i % 2) * 300, y = 780 + Math.floor(i / 2) * 110; txt(e.toUpperCase(), x, y, `700 18px ${F}`, '#8a8a8a', 'left'); txt(v, x, y + 50, `900 46px ${F}`, col || c1, 'left'); });
+    txt('sangrefria.app', W - 80, H - 50, `700 22px ${F}`, '#777', 'right');
+  },
+
+  arcade({ c, W, H, T, sem, o, txt, nombre, cifras }) {
+    const P = '"Press Start 2P", ui-monospace, monospace';
+    c.fillStyle = '#05010f'; c.fillRect(0, 0, W, H);
+    c.strokeStyle = `rgba(${T.acRgb},.35)`; c.lineWidth = 2;
+    for (let i = 0; i < 16; i++) { const y = 700 + i * i * 2.4; c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+    for (let i = -20; i <= 20; i++) { c.beginPath(); c.moveTo(W / 2 + i * 30, 700); c.lineTo(W / 2 + i * 160, H); c.stroke(); }
+    const g = c.createLinearGradient(0, 160, 0, 520); g.addColorStop(0, '#ffe14a'); g.addColorStop(1, '#ff4fa3');
+    c.fillStyle = g; c.beginPath(); c.arc(W / 2, 700, 280, Math.PI, 0); c.fill();
+    c.fillStyle = '#05010f'; for (let i = 0; i < 6; i++) c.fillRect(W / 2 - 300, 560 + i * 26, 600, 6 + i * 2);
+    const ok = sem.disc >= 50;
+    txt(ok ? 'NIVEL SUPERADO' : '¿CONTINUAR?', W / 2, 200, `400 76px ${P}`, '#fff', 'center', T.ac);
+    txt(`JUGADOR 1: ${nombre.toUpperCase().slice(0, 16)}`, W / 2, 290, `400 30px ${P}`, T.ac2);
+    txt(sem.rango.toUpperCase(), W / 2, 340, `400 20px ${P}`, '#bbb');
+    const vidas = Math.max(0, Math.min(sem.dias, 7));
+    for (let i = 0; i < vidas; i++) txt('♥', W / 2 - (vidas - 1) * 30 + i * 60, 420, `400 40px ${P}`, i < sem.diasLimpios ? '#ff4f6d' : '#444');
+    cifras.forEach(([e, v], i) => { const x = 180 + i * 330; txt(e.toUpperCase(), x, 900, `400 18px ${P}`, '#aaa', 'left'); txt(v, x, 960, `400 34px ${P}`, '#ffe14a', 'left'); });
+    txt('PULSA START · SANGREFRIA.APP', W / 2, 1060, `400 18px ${P}`, '#8a7bd9');
+    c.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < H; y += 4) c.fillRect(0, y, W, 2);
+  },
+
+  terminal({ c, W, H, T, sem, o, txt, nombre, frase, MONO }) {
+    c.fillStyle = T.noche; c.fillRect(0, 0, W, H);
+    const x = 90, y = 70, w = W - 180, h = H - 140;
+    c.save(); c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 50; c.fillStyle = '#0b0f0d'; c.beginPath(); c.roundRect(x, y, w, h, 18); c.fill(); c.restore();
+    c.fillStyle = '#1b211e'; c.beginPath(); c.roundRect(x, y, w, 60, [18, 18, 0, 0]); c.fill();
+    ['#ff5f57', '#febc2e', '#28c840'].forEach((col, i) => { c.fillStyle = col; c.beginPath(); c.arc(x + 40 + i * 32, y + 30, 10, 0, Math.PI * 2); c.fill(); });
+    txt('sangre-fria — certificado', x + w / 2, y + 40, `700 22px ${MONO}`, '#8a958f');
+    const verde = T.claro ? '#3ee08a' : T.ac2, gris = '#7f8a84';
+    const L = [[`$ sangre-fria certificado --semana ${sem.lunes}`, '#e6e6e6'], ['', ''], ['> verificando trades ............ OK', gris],
+      [`> trader ....................... ${nombre}`, '#fff'], [`> semana ....................... ${sem.rango}`, '#fff'],
+      [`> trades ....................... ${sem.n}`, '#fff'], [`> win_rate ..................... ${sem.wr == null ? '—' : sem.wr + '%'}`, '#fff'],
+      [`> disciplina ................... ${sem.disc}%`, '#fff'], [`> resultado .................... ${o.dinero ? dinero(sem.real, true) : 'oculto'}`, o.dinero ? (sem.real < 0 ? '#ff6b7a' : '#3ee08a') : gris],
+      ['', ''], [`> veredicto: ${sem.titulo.toUpperCase()}`, verde], [`> "${frase}"`, gris], ['', ''], ['[OK] certificado emitido por MJ_benzz · sangrefria.app', verde]];
+    L.forEach(([t, col], i) => txt(t, x + 50, y + 130 + i * 52, `700 ${t.length > 62 ? 26 : 30}px ${MONO}`, col, 'left'));
+    c.fillStyle = verde; c.fillRect(x + 50, y + 130 + L.length * 52 - 30, 20, 36);
+  }
+};
+
 let certSel = null;
+function htmlExtraCert(o) {
+  if (o.estilo === 'foto') return `<div class="campo">Fondo<div class="cert-fotos">${FOTOS_CERT.map(([id, src, n]) => `<button type="button" data-foto="${id}" aria-pressed="${o.foto === id}" title="${n}"><img src="${src}" alt="" loading="lazy"><span>${n}</span></button>`).join('')}
+    <button type="button" data-foto="propia" aria-pressed="${o.foto === 'propia'}" class="subir">${fotoPropia ? `<img src="${fotoPropia}" alt="">` : '<b>+</b>'}<span>${fotoPropia ? 'Tu foto' : 'Sube tu foto'}</span></button></div></div>`;
+  if (o.estilo === 'meme') return `<label class="campo">Frase del meme<select name="meme">${FRASES_MEME.map((f, i) => `<option value="${i}" ${i === (o.meme || 0) ? 'selected' : ''}>${esc(f[0])} / ${esc(f[1])}</option>`).join('')}</select></label>
+    <div class="grid g2"><label class="campo">Texto de arriba<input type="text" name="memeA" maxlength="60" value="${esc(o.memeA || '')}" placeholder="${esc((FRASES_MEME[o.meme || 0])[0])}"></label>
+    <label class="campo">Texto de abajo<input type="text" name="memeB" maxlength="60" value="${esc(o.memeB || '')}" placeholder="${esc((FRASES_MEME[o.meme || 0])[1])}"></label></div>
+    <div class="campo">Protagonista<div class="cert-sujetos">${SUJETOS_MEME.map(s => `<button type="button" data-sujeto="${s}" aria-pressed="${(o.sujeto || SUJETOS_MEME[0]) === s}"><img src="img/juego/av-${s}.webp" alt="${s}" loading="lazy"></button>`).join('')}</div></div>`;
+  return '';
+}
 function pintarCertificados() {
   const cuerpo = $('#cert-cuerpo'), semanas = semanasConTrades();
   if (!semanas.length) {
@@ -3308,17 +3685,21 @@ function pintarCertificados() {
   }
   if (!semanas.includes(certSel)) certSel = semanas[0];
   const o = optsCert(), sem = statsSemana(certSel), T = temaActual();
+  if (!ESTILOS_CERT.some(([v]) => v === o.estilo)) o.estilo = 'clasico';
   cuerpo.innerHTML = `
     <div class="cert-zona">
-      <div class="cert-vista aparece"><canvas id="cert-grande" width="1600" height="1130" role="img" aria-label="Certificado de la semana ${sem.semana}"></canvas></div>
+      <div class="cert-vista aparece"><canvas id="cert-grande" width="1600" height="1130" role="img" aria-label="Certificado de la semana del ${sem.rango}"></canvas></div>
+      <div class="cert-tipos-caja"><h2 class="sec-tit">Elige el tipo de certificado <small class="mut">${ESTILOS_CERT.length} opciones</small></h2>
+      <div class="cert-tipos">${ESTILOS_CERT.map(([v, n]) => `<button type="button" class="cert-tipo" data-tipo="${v}" aria-pressed="${o.estilo === v}">
+        <canvas class="cert-mini-tipo" data-tipo-mini="${v}" width="240" height="170" aria-hidden="true"></canvas><b>${n}</b></button>`).join('')}</div></div>
       <form class="cristal cert-opc pila aparece" id="f-cert" autocomplete="off" onsubmit="return false">
         <span class="etiqueta">Personaliza tu certificado</span>
-        <label class="campo">Semana<select name="semana">${semanas.map(l => `<option value="${l}" ${l === certSel ? 'selected' : ''}>Semana ${numSemana(l)} · ${rangoSemana(l)}</option>`).join('')}</select></label>
+        <label class="campo">Semana<select name="semana">${semanas.map(l => `<option value="${l}" ${l === certSel ? 'selected' : ''}>${rangoSemana(l)}</option>`).join('')}</select></label>
         <label class="campo">Nombre en el certificado<input type="text" name="nombre" maxlength="30" value="${esc(o.nombre || '')}" placeholder="${esc(datos.ajustes.nombre || 'Tu nombre')}"></label>
-        <label class="campo">Tu frase (opcional)<input type="text" name="frase" maxlength="80" value="${esc(o.frases[certSel] || '')}" placeholder="${esc(sem.frase)}"></label>
-        <div class="campo">Estilo<div class="seg" id="seg-cert">${[['clasico', 'Clásico'], ['neon', 'Neón'], ['minimal', 'Minimal']].map(([v, n]) => `<button type="button" data-v="${v}" aria-pressed="${o.estilo === v}">${n}</button>`).join('')}</div></div>
+        <label class="campo" ${o.estilo === 'meme' ? 'hidden' : ''}>Tu frase (opcional)<input type="text" name="frase" maxlength="80" value="${esc(o.frases[certSel] || '')}" placeholder="${esc(sem.frase)}"></label>
+        <div id="cert-extra" class="pila">${htmlExtraCert(o)}</div>
         <label class="chk-fila cert-chk"><input type="checkbox" name="dinero" ${o.dinero ? 'checked' : ''}><span>Mostrar cuánto gané</span></label>
-        <p class="mut chico-txt" style="margin:0">Los colores y el logo salen de tu tema: <b>${esc(T.n)}</b>. <button type="button" class="enlace" data-ir="pase">Cambiar tema</button></p>
+        <p class="mut chico-txt" style="margin:0">Los colores salen de tu tema: <b>${esc(T.n)}</b>. <button type="button" class="enlace" data-ir="pase">Cambiar tema</button></p>
         <button type="button" class="btn pri" id="cert-bajar"><svg><use href="#i-bajar"/></svg>Descargar certificado</button>
         <button type="button" class="btn" id="cert-compartir" ${navigator.canShare ? '' : 'hidden'}>Compartir</button>
         <button type="button" class="btn chico" id="b-tarjeta">Tarjeta para historias</button>
@@ -3327,35 +3708,71 @@ function pintarCertificados() {
     <h2 class="sec-tit">Tus semanas</h2>
     <div class="cert-galeria">${semanas.slice(0, 16).map(l => { const s = statsSemana(l); return `<button type="button" class="cert-item aparece" data-cert="${l}" aria-pressed="${l === certSel}">
       <canvas class="cert-mini" data-semana="${l}" width="320" height="226" aria-hidden="true"></canvas>
-      <b>${esc(s.titulo)}</b><small>Semana ${s.semana} · ${s.rango}</small></button>`; }).join('')}</div>`;
+      <b>${esc(s.titulo)}</b><small>${s.rango}</small></button>`; }).join('')}</div>
+    <input type="file" id="i-cert-foto" accept="image/*" hidden>`;
   revelar(cuerpo);
-  redibujarCerts();
+  redibujarCerts(true);
+  document.fonts?.load('40px Anton').then(() => document.fonts.load('20px "Press Start 2P"')).then(() => document.fonts.load('italic 700 40px "Playfair Display"')).then(() => redibujarCerts(true)).catch(() => {});
   $('#b-tarjeta').addEventListener('click', tarjeta);
 }
-function redibujarCerts() {
+function redibujarCerts(tipos) {
   const cv = $('#cert-grande'); if (!cv) return;
   const o = optsCert(), sem = statsSemana(certSel); if (!sem) return;
-  dibujarCert(cv, sem, { ...o, frase: o.frases[certSel] || '' });
+  const oo = { ...o, frase: o.frases[certSel] || '' };
+  dibujarCert(cv, sem, oo);
   pintarMinis($('.cert-galeria'));
+  if (tipos) $$('canvas[data-tipo-mini]').forEach(m => dibujarCert(m, sem, { ...oo, estilo: m.dataset.tipoMini }));
 }
 let timerCert = null;
 document.addEventListener('input', e => {
   const f = e.target.closest('#f-cert'); if (!f) return;
-  const o = optsCert();
-  if (e.target.name === 'semana') { certSel = e.target.value; pintarCertificados(); return; }
-  if (e.target.name === 'nombre') o.nombre = e.target.value.slice(0, 30);
-  if (e.target.name === 'frase') o.frases[certSel] = e.target.value.slice(0, 80);
-  if (e.target.name === 'dinero') o.dinero = e.target.checked;
+  const o = optsCert(), n = e.target.name;
+  if (n === 'semana') { certSel = e.target.value; pintarCertificados(); return; }
+  if (n === 'nombre') o.nombre = e.target.value.slice(0, 30);
+  if (n === 'frase') o.frases[certSel] = e.target.value.slice(0, 80);
+  if (n === 'dinero') o.dinero = e.target.checked;
+  if (n === 'meme') { o.meme = Number(e.target.value); o.memeA = ''; o.memeB = ''; $('#cert-extra').innerHTML = htmlExtraCert(o); }
+  if (n === 'memeA') o.memeA = e.target.value.slice(0, 60);
+  if (n === 'memeB') o.memeB = e.target.value.slice(0, 60);
   clearTimeout(timerCert); timerCert = setTimeout(guardar, 400);
-  redibujarCerts();
+  redibujarCerts(n === 'nombre' || n === 'dinero' || n === 'meme');
+});
+document.addEventListener('change', e => {
+  if (e.target.id !== 'i-cert-foto') return;
+  const archivo = e.target.files[0]; if (!archivo) return;
+  const im = new Image();
+  im.onload = () => {
+    const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 1130;
+    cubrir(cv.getContext('2d'), im, 0, 0, 1600, 1130);
+    fotoPropia = cv.toDataURL('image/jpeg', .82);
+    try { localStorage.setItem(FOTO_PROPIA_K, fotoPropia); } catch { toast('Tu foto se usará solo mientras tengas abierta la app'); }
+    const o = optsCert(); o.foto = 'propia'; guardar(); URL.revokeObjectURL(im.src);
+    $('#cert-extra').innerHTML = htmlExtraCert(o); redibujarCerts(true);
+  };
+  im.src = URL.createObjectURL(archivo); e.target.value = '';
 });
 document.addEventListener('click', async e => {
-  const est = e.target.closest('#seg-cert [data-v]');
-  if (est) { optsCert().estilo = est.dataset.v; $$('#seg-cert [data-v]').forEach(b => b.setAttribute('aria-pressed', b === est)); guardar(); redibujarCerts(); pop(est); return; }
+  const tp = e.target.closest('[data-tipo]');
+  if (tp) {
+    const o = optsCert(); o.estilo = tp.dataset.tipo; guardar();
+    $$('[data-tipo]').forEach(b => b.setAttribute('aria-pressed', b === tp));
+    $('#cert-extra').innerHTML = htmlExtraCert(o);
+    const fr = $('#f-cert [name="frase"]')?.closest('label'); if (fr) fr.hidden = o.estilo === 'meme';
+    redibujarCerts(); pop(tp);
+    if (matchMedia('(max-width: 1000px)').matches) $('#cert-grande').scrollIntoView({ behavior: SIN_MOV ? 'auto' : 'smooth', block: 'center' });
+    return;
+  }
+  const fo = e.target.closest('[data-foto]');
+  if (fo) {
+    if (fo.dataset.foto === 'propia' && (!fotoPropia || optsCert().foto === 'propia')) { $('#i-cert-foto').click(); return; }
+    optsCert().foto = fo.dataset.foto; guardar(); $$('[data-foto]').forEach(b => b.setAttribute('aria-pressed', b === fo)); redibujarCerts(true); return;
+  }
+  const su = e.target.closest('[data-sujeto]');
+  if (su) { optsCert().sujeto = su.dataset.sujeto; guardar(); $$('[data-sujeto]').forEach(b => b.setAttribute('aria-pressed', b === su)); redibujarCerts(true); return; }
   const it = e.target.closest('[data-cert]');
   if (it) { certSel = it.dataset.cert; pintarCertificados(); $('#cert-grande')?.scrollIntoView({ behavior: SIN_MOV ? 'auto' : 'smooth', block: 'center' }); return; }
   if (e.target.closest('#cert-bajar, #cert-compartir')) {
-    const cv = $('#cert-grande'), nombre = `certificado-sangre-fria-semana-${numSemana(certSel)}.png`;
+    const cv = $('#cert-grande'), nombre = `certificado-sangre-fria-${certSel}.png`;
     const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
     if (!blob) { toast('No se pudo crear la imagen'); return; }
     const archivo = new File([blob], nombre, { type: 'image/png' });
@@ -3934,24 +4351,24 @@ const nombrePremio = id => id.startsWith('cofre:') ? COFRES[id.slice(6)].nombre 
    Al elegir un fondo cambia toda la app: acento, paneles, barra lateral, textos suaves, logo y certificados. */
 const TEMAS = {
   envivo:    { n: 'Azul MJ',    ac: '#1a5fe6', ac2: '#4da3ff', hi: '#b9dcff', noche: '#05070d', panel: '#111a2e', lat: '#080b14', mut: '#a3afca', logo: 'none' },
-  terminal:  { n: 'Ámbar',      ac: '#ff9a1f', ac2: '#ffc061', hi: '#ffe2b8', noche: '#0b0703', panel: '#21170b', lat: '#100a04', mut: '#b39a7a', tinta: '#1a0f00' },
-  grafica:   { n: 'Cian',       ac: '#0fb2dc', ac2: '#4fd8ff', hi: '#c4f1ff', noche: '#02090c', panel: '#0c1f26', lat: '#041014', mut: '#86a9b3', tinta: '#00151c' },
-  holograma: { n: 'Magenta',    ac: '#c13bff', ac2: '#e07cff', hi: '#f4d4ff', noche: '#08030c', panel: '#1f1129', lat: '#0e0614', mut: '#a993b5' },
+  terminal:  { n: 'Ámbar',      ac: '#d98a2b', ac2: '#e8aa5c', hi: '#f3d9b5', noche: '#0b0703', panel: '#21170b', lat: '#100a04', mut: '#b39a7a', tinta: '#1a0f00' },
+  grafica:   { n: 'Cian',       ac: '#2a9fc0', ac2: '#5ec4e0', hi: '#c9ecf6', noche: '#02090c', panel: '#0c1f26', lat: '#041014', mut: '#86a9b3', tinta: '#00151c' },
+  holograma: { n: 'Magenta',    ac: '#a54ad6', ac2: '#c47fe8', hi: '#ecd6f7', noche: '#08030c', panel: '#1f1129', lat: '#0e0614', mut: '#a993b5' },
   tormenta:  { n: 'Acero',      ac: '#6f93bd', ac2: '#a5c3e6', hi: '#e2eefc', noche: '#06080b', panel: '#171c23', lat: '#0b0e12', mut: '#8f99a6', tinta: '#0a1018' },
   noche:     { n: 'Medianoche', ac: '#4b5bd6', ac2: '#8592ff', hi: '#d5d9ff', noche: '#04040a', panel: '#14152c', lat: '#08081a', mut: '#9a9cc0' },
   rejilla:   { n: 'Grafito',    ac: '#e8e8e8', ac2: '#ffffff', hi: '#ffffff', noche: '#080808', panel: '#181818', lat: '#0e0e0e', mut: '#9a9a9a', tinta: '#0a0a0a', logo: 'grayscale(1) brightness(1.35)' },
-  velas:     { n: 'Lima',       ac: '#86d40f', ac2: '#b4ff4a', hi: '#eaffc8', noche: '#060802', panel: '#171e0b', lat: '#0b0f04', mut: '#9aa685', tinta: '#102000' },
-  diagonal:  { n: 'Coral',      ac: '#ff5e3a', ac2: '#ff8f70', hi: '#ffd8cc', noche: '#0b0403', panel: '#26130e', lat: '#120806', mut: '#b8948c' },
-  tickers:   { n: 'Turquesa',   ac: '#14c8a8', ac2: '#4cf0d0', hi: '#c9fff3', noche: '#020a09', panel: '#0d2320', lat: '#04120f', mut: '#85aba4', tinta: '#00201a' },
-  wallst:    { n: 'Champán',    ac: '#c8a86b', ac2: '#e6cd9a', hi: '#f7ecd4', noche: '#060810', panel: '#151b2a', lat: '#0a0e18', mut: '#9a9eab', tinta: '#1a1206' },
-  manhattan: { n: 'Rosa',       ac: '#ff4f8b', ac2: '#ff86b0', hi: '#ffd3e3', noche: '#0b0307', panel: '#27111b', lat: '#13070d', mut: '#b8939f' },
-  aurora:    { n: 'Esmeralda',  ac: '#10b981', ac2: '#3ee0a8', hi: '#c8fbe6', noche: '#020a07', panel: '#0c2119', lat: '#04110c', mut: '#82a898', tinta: '#00180f' },
-  nyse:      { n: 'Carmesí',    ac: '#e0284f', ac2: '#ff5c7d', hi: '#ffd0da', noche: '#0a0204', panel: '#250c12', lat: '#120508', mut: '#b38c94' },
-  oro:       { n: 'Oro',        ac: '#f5b81c', ac2: '#ffd65a', hi: '#fff0c2', noche: '#070502', panel: '#1e170a', lat: '#0e0b04', mut: '#b3a37f', tinta: '#1a1000' },
+  velas:     { n: 'Lima',       ac: '#7fae2e', ac2: '#a3cf5c', hi: '#dcefc0', noche: '#060802', panel: '#171e0b', lat: '#0b0f04', mut: '#9aa685', tinta: '#102000' },
+  diagonal:  { n: 'Coral',      ac: '#e0654a', ac2: '#ee9078', hi: '#f7d6cc', noche: '#0b0403', panel: '#26130e', lat: '#120806', mut: '#b8948c' },
+  tickers:   { n: 'Turquesa',   ac: '#22a891', ac2: '#57cdb6', hi: '#c8f1e8', noche: '#020a09', panel: '#0d2320', lat: '#04120f', mut: '#85aba4', tinta: '#00201a' },
+  wallst:    { n: 'Champán',    ac: '#b39a6e', ac2: '#d2bb8f', hi: '#efe3cc', noche: '#060810', panel: '#151b2a', lat: '#0a0e18', mut: '#9a9eab', tinta: '#1a1206' },
+  manhattan: { n: 'Rosa',       ac: '#e0558a', ac2: '#ec86ab', hi: '#f8d3e1', noche: '#0b0307', panel: '#27111b', lat: '#13070d', mut: '#b8939f' },
+  aurora:    { n: 'Esmeralda',  ac: '#1fa77a', ac2: '#4fcb9e', hi: '#c8f1e1', noche: '#020a07', panel: '#0c2119', lat: '#04110c', mut: '#82a898', tinta: '#00180f' },
+  nyse:      { n: 'Carmesí',    ac: '#c73a56', ac2: '#e26a82', hi: '#f6d0d8', noche: '#0a0204', panel: '#250c12', lat: '#120508', mut: '#b38c94' },
+  oro:       { n: 'Oro',        ac: '#c99a35', ac2: '#dcb867', hi: '#efdcae', noche: '#070502', panel: '#1e170a', lat: '#0e0b04', mut: '#b3a37f', tinta: '#1a1000' },
   piso1963:  { n: 'Sepia',      ac: '#c9a57a', ac2: '#e2c49c', hi: '#f3e6d3', noche: '#0a0907', panel: '#1d1a15', lat: '#100e0b', mut: '#a69c8f', tinta: '#1a1206', logo: 'grayscale(1) sepia(.85) brightness(1.1)' },
-  cyber:     { n: 'Neón',       ac: '#ff2bd6', ac2: '#24e3ff', hi: '#ffd1f5', noche: '#07020d', panel: '#1b0d28', lat: '#0e0517', mut: '#a98fbd' },
+  cyber:     { n: 'Neón',       ac: '#e03fc2', ac2: '#3fcfe6', hi: '#f6d3ef', noche: '#07020d', panel: '#1b0d28', lat: '#0e0517', mut: '#a98fbd' },
   marmol:    { n: 'Mármol',     ac: '#0f7a5a', ac2: '#13a077', hi: '#0f7a5a', noche: '#ece8df', panel: '#ffffff', lat: '#f6f3ec', mut: '#6b6f76', claro: true },
-  cosmos:    { n: 'Nebulosa',   ac: '#9b5cff', ac2: '#c39bff', hi: '#e8dbff', noche: '#05030c', panel: '#1a1330', lat: '#0b0719', mut: '#a59cc4' }
+  cosmos:    { n: 'Nebulosa',   ac: '#8a5ce0', ac2: '#ae8ff0', hi: '#e3d8fa', noche: '#05030c', panel: '#1a1330', lat: '#0b0719', mut: '#a59cc4' }
 };
 const hexRgb = h => { const n = parseInt(h.slice(1), 16); return [n >> 16, n >> 8 & 255, n & 255]; };
 const rgbTxt = h => hexRgb(h).join(',');
