@@ -1474,7 +1474,7 @@
         </div>
       </section>
 
-      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.</footer>
+      <footer>Hecho por <b>MJ_benzz</b> · <a href="https://discord.gg/ahPAFXASs7" target="_blank" rel="noopener">Únete a la comunidad en Discord</a><br>Herramienta educativa. No es asesoría financiera.<br><small style="opacity:.6">Versión 6.2</small></footer>
     </main>
   </div>
 </div>
@@ -1880,8 +1880,14 @@ function fotoSalida(seccion, dir) {
 }
 function entrarVista(seccion, dir) {
   entradaVista?.cancel();
-  entradaVista = seccion.animate([{ opacity: 0, transform: `translate3d(${dir * 30}px,0,0)` }, { opacity: 1, transform: 'none' }],
-    { duration: 280, delay: 90, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+  // Con "reducir movimiento" activado en el celular: solo un cruce suave, sin desplazamiento
+  entradaVista = SIN_MOV
+    ? seccion.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' })
+    : seccion.animate([{ opacity: 0, transform: `translate3d(${dir * 30}px,0,0)` }, { opacity: 1, transform: 'none' }],
+      { duration: 280, delay: 90, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+  // Si el navegador pausa las animaciones, el contenido no puede quedarse invisible
+  const entrada = entradaVista;
+  setTimeout(() => { if (entrada.playState !== 'finished') entrada.cancel(); }, 700);
 }
 // Indicador que se desliza hasta el botón activo de la barra lateral y de la barra del celular
 function moverLuces(sinAnimar) {
@@ -1905,9 +1911,9 @@ document.fonts?.ready.then(() => moverLuces(true));
 
 function ir(v) {
   if (v !== 'portada' && v !== 'ajustes' && !datos.ajustes) v = 'portada';
-  const antes = $('#v-' + vista), hayCambio = v !== vista && antes && !antes.hidden && !SIN_MOV;
+  const antes = $('#v-' + vista), hayCambio = v !== vista && antes && !antes.hidden;
   const dir = ORDEN_VISTAS.indexOf(v) >= ORDEN_VISTAS.indexOf(vista) ? 1 : -1;
-  if (hayCambio) fotoSalida(antes, dir);
+  if (hayCambio && !SIN_MOV) fotoSalida(antes, dir);
   vista = v;
   for (const s of ['portada', 'panel', 'historial', 'ranking', 'pase', 'ajustes']) $('#v-' + s).hidden = s !== v;
   $('#tab-movil').hidden = !datos.ajustes;
